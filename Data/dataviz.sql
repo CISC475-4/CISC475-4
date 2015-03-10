@@ -28,7 +28,9 @@ create table component (
 	Level integer default -1,
 	-- Column integer default 1, -- Which column in the .xlsx this is.
 	-- ^ We can figure that out with the primary key if needed.
-	primary key ( Type, ReplaceCode )
+	primary key ( Type, Code )
+	-- Note that the data will appear on the spreadsheets as ( Type, ReplaceCode )!
+	-- We can't use that as the primary key because they'd all be the same here.
 );
 
 
