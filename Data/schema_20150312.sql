@@ -19,9 +19,8 @@ create table if not exists Chunk(
 	b1 numeric(1),
 	b2 numeric(1),
 	b3 numeric(1),
-	primary key (child_id, session_id, time),
-	foriegn key child_id references Session(child_id),
-	foriegn key session_id references Session(session_id)
+	primary key(child_id, session_id, time),
+	foreign key(child_id, session_id) references Session
 );
 -- Group Data from the "AllGroupData" sheet
 --
@@ -37,8 +36,7 @@ create table if not exists GroupData(
 	rate_per_chunk real not null,
 	rate_per_session real not null,
 	primary key (combo_index, child_id, session_id),
-	foriegn key child_id references Session(child_id),
-	foriegn key session_id references Session(session_id)
+	foreign key(child_id, session_id) references Session
 );
 -- Metadata about a Session. Includes things like the file it was loaded up from
 --
@@ -50,7 +48,5 @@ create table if not exists Session_Meta(
 	time_loaded numeric(10) not null,
 	time_modified numeric(10) not null,
 	filename varchar(255) not null,
-	foriegn key child_id references Session(child_id),
-	foriegn key session_id references Session(session_id)
+	foreign key(child_id, session_id) references Session
 );
-commit;

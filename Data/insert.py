@@ -25,4 +25,5 @@ def setup(sql_file):
 
     con.close()
 
-setup('dataviz.sql')
+#setup('dataviz.sql')
+setup('schema_20150312.sql')
