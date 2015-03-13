@@ -57,3 +57,5 @@ target/
 **/*.xlsx
 # To leave a specific file in, use !<filename>
 **/*.csv
+.swp
+.DS_Store
