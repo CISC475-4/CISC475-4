@@ -52,3 +52,10 @@ docs/_build/
 
 # PyBuilder
 target/
+
+# Example data files that shouldn't be on GitHub. Assume they can be anywhere.
+**/*.xlsx
+# To leave a specific file in, use !<filename>
+**/*.csv
+.swp
+.DS_Store
