@@ -2,12 +2,21 @@
 # -*- coding: utf-8 -*-
 
 import sys
+import imp
 from PySide import QtGui
 
-class Example(QtGui.QMainWindow):
+"""
+UI class for the main screen, that will host the graphs and functionality for uploading data
+"""
+
+class MainScreen(QtGui.QMainWindow):
+
+    # not sure how to load using relative path yet, but kelly needs to add xlrd library anyway so commented for now
+    # fu = imp.load_source('FileUtility.py', '/Users/brandontrautmann/GoogleDrive/development/cisc475/CISC475-4/Utility/FileUtility.py')
+    # fu.XLStoCSV('Workbook1.xlsx')
     
     def __init__(self):
-        super(Example, self).__init__()
+        super(MainScreen, self).__init__()
         
         self.initUI()
         
@@ -17,6 +26,7 @@ class Example(QtGui.QMainWindow):
         exitAction = QtGui.QAction(QtGui.QIcon('run.png'), '&XLStoCSV', self)
         exitAction.setShortcut('Ctrl+Q')
         exitAction.triggered.connect(self.close)
+        
         # status for status bar
         exitAction.setStatusTip('Run Kelly\'s Script')
         self.statusBar()
@@ -31,15 +41,14 @@ class Example(QtGui.QMainWindow):
         toolbar.addAction(exitAction)
         
         # window props
-        self.setGeometry(300, 300, 700, 500) # needs to not be hard-coded
         self.setWindowTitle('Data Visualization')    
-        self.show()
+        self.showMaximized()
         
         
 def main():
     
     app = QtGui.QApplication(sys.argv)
-    ex = Example()
+    ex = MainScreen()
     sys.exit(app.exec_())
 
 
