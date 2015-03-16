@@ -47,9 +47,9 @@ class MainScreen(QtGui.QMainWindow):
         
 def main():
     
-    app = QtGui.QApplication(sys.argv)
-    ex = MainScreen()
-    sys.exit(app.exec_())
+    application = QtGui.QApplication(sys.argv)
+    thisScreen = MainScreen()
+    sys.exit(application.exec_())
 
 
 if __name__ == '__main__':
