@@ -11,3 +11,7 @@ Using Vagrant:
 5. In the GUI shell, run $ sudo startxfce4&
 6. An actual GUI should appear, from here you can access the repository in /vagrant because it's a shared folder of the project
 
+To save state of the VM, use $ vagrant suspend
+To destroy the VM, use $ vagrant destroy
+To start, or restart the VM from suspend, use $ vagrant up
+(I'm not sure of this) To update the VM when new stuff is added, use $ vagrant reload --provision 
