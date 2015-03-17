@@ -23,32 +23,48 @@ class MainScreen(QtGui.QMainWindow):
     def initUI(self):               
 
         # set up exit action and its props
-        exitAction = QtGui.QAction(QtGui.QIcon('run.png'), '&XLStoCSV', self)
-        exitAction.setShortcut('Ctrl+Q')
-        exitAction.triggered.connect(self.close)
-        
-        # status for status bar
-        exitAction.setStatusTip('Run Kelly\'s Script')
+        exit_action = QtGui.QAction(QtGui.QIcon('ui_assets/run.png'), '&XLStoCSV', self)
+        exit_action.setShortcut('Ctrl+Q')
+        exit_action.setStatusTip('Run Kelly\'s Script')
+        exit_action.triggered.connect(self.close)
+
+        # set up open file action and its props
+        open_file_action = QtGui.QAction(QtGui.QIcon('ui_assets/open.png'), 'Open', self)
+        open_file_action.setShortcut('Ctrl+O')
+        open_file_action.setStatusTip('Open new File')
+        open_file_action.triggered.connect(self.showOpenFileDialog)
+ 
+        # add status bar
         self.statusBar()
 
         # create the menu bar, by default on Mac OS it is in top menu bar
         menubar = self.menuBar()
-        fileMenu = menubar.addMenu('&File')
-        fileMenu.addAction(exitAction)
+        file_menu = menubar.addMenu('&File')
+        file_menu.addAction(exit_action)
 
         # add the toolbar and stick action on it
         toolbar = self.addToolBar('XLStoCSV')
-        toolbar.addAction(exitAction)
+        toolbar.addAction(exit_action)
+        toolbar.addAction(open_file_action)
         
         # window props
         self.setWindowTitle('Data Visualization')    
         self.showMaximized()
         
+    def showOpenFileDialog(self):
+
+        file_name, _ = QtGui.QFileDialog.getOpenFileName(self, 'Open file',
+                    '~/')
         
+        f = open(file_name)
+        print(f.name)
+        
+        # this is where we will need to send the retrieved path to Matt's script
+
 def main():
     
     application = QtGui.QApplication(sys.argv)
-    thisScreen = MainScreen()
+    this_screen = MainScreen()
     sys.exit(application.exec_())
 
 
