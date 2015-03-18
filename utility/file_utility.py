@@ -38,7 +38,7 @@ class Instance(object):
         return str(self.Data)
 
 
-def getDataFrom(path):
+def get_data_from(path):
 
     """
     performs the simple tasks of reading in data instances.
@@ -61,7 +61,7 @@ def getDataFrom(path):
     return (columns, instances)
 
 
-def XLStoCSV(path):
+def xls_to_csv(path):
     """
     Convert all spreadsheets in file 'path' to a csv. Saved file is named w/ concatenation of path & spreadsheet name
     NOTE: input MUST be in '.xls' or '.xlsx' format

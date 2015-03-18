@@ -2,7 +2,6 @@
 # -*- coding: utf-8 -*-
 
 import sys
-sys.path.append("../")
 from PySide import QtGui
 
 
@@ -29,13 +28,13 @@ class MainScreen(QtGui.QMainWindow):
         # TODO: Separate out components of UI in classes or separate functions. e.g. separate toolbar
 
         # set up exit action and its properties
-        exit_action = QtGui.QAction(QtGui.QIcon('UI/ui_assets/run.png'), '&XLStoCSV', self)
+        exit_action = QtGui.QAction(QtGui.QIcon('ui/ui_assets/run.png'), '&XLStoCSV', self)
         exit_action.setShortcut('Ctrl+Q')
         exit_action.setStatusTip('Run Kelly\'s Script')
         exit_action.triggered.connect(self.close)
 
         # set up open file action and its properties
-        open_file_action = QtGui.QAction(QtGui.QIcon('UI/ui_assets/open.png'), 'Open', self)
+        open_file_action = QtGui.QAction(QtGui.QIcon('ui/ui_assets/open.png'), 'Open', self)
         open_file_action.setShortcut('Ctrl+O')
         open_file_action.setStatusTip('Open new File')
         open_file_action.triggered.connect(use_open_file_dialog(self, self.controller.import_file_to_database))
