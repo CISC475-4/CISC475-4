@@ -1,3 +1,4 @@
+#!/usr/bin/env python2
 
 """
 Source code in FileUtility.py regards reading the data from a structured CSV file into memory
