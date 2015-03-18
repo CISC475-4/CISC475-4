@@ -44,8 +44,10 @@ class MainScreen(QtGui.QMainWindow):
 
         # create the menu bar, by default on Mac OS it is in top menu bar
         menubar = self.menuBar()
-        file_menu = menubar.addMenu('&File')
-        file_menu.addAction(exit_action)
+       
+        action_menu = menubar.addMenu('&Actions')
+        action_menu.addAction(exit_action)
+        action_menu.addAction(open_file_action)
 
         # add the toolbar and stick action on it
         toolbar = self.addToolBar('XLStoCSV')
