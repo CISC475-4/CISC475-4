@@ -2,37 +2,46 @@
 # -*- coding: utf-8 -*-
 
 import sys
-import imp
+sys.path.append("../")
 from PySide import QtGui
 
-"""
-UI class for the main screen, that will host the graphs and functionality for uploading data
-"""
 
 class MainScreen(QtGui.QMainWindow):
+    """
+    UI class for the main screen, that will host the graphs and functionality for uploading data
+    """
 
     # not sure how to load using relative path yet, but kelly needs to add xlrd library anyway so commented for now
     # fu = imp.load_source('FileUtility.py', '/Users/brandontrautmann/GoogleDrive/development/cisc475/CISC475-4/Utility/FileUtility.py')
     # fu.XLStoCSV('Workbook1.xlsx')
     
-    def __init__(self):
+    def __init__(self, controller):
+        """
+        __init__
+        Description: Creates an instance of MainScreen.
+        Input:
+            controller (Controller instance) initialized instance of the controller
+        """
         super(MainScreen, self).__init__()
-        
-        self.initUI()
-        
-    def initUI(self):               
 
-        # set up exit action and its props
+        self.controller = controller
+        
+        # Set up the initial UI
+        self.init_ui()
+        
+    def init_ui(self):               
+
+        # set up exit action and its properties
         exit_action = QtGui.QAction(QtGui.QIcon('ui_assets/run.png'), '&XLStoCSV', self)
         exit_action.setShortcut('Ctrl+Q')
         exit_action.setStatusTip('Run Kelly\'s Script')
         exit_action.triggered.connect(self.close)
-
-        # set up open file action and its props
+    
+        # set up open file action and its properties
         open_file_action = QtGui.QAction(QtGui.QIcon('ui_assets/open.png'), 'Open', self)
         open_file_action.setShortcut('Ctrl+O')
         open_file_action.setStatusTip('Open new File')
-        open_file_action.triggered.connect(self.showOpenFileDialog)
+        open_file_action.triggered.connect( use_open_file_dialog(self, self.controller.import_file_to_database) )
  
         # add status bar
         self.statusBar()
@@ -51,22 +60,34 @@ class MainScreen(QtGui.QMainWindow):
         self.setWindowTitle('Data Visualization')    
         self.showMaximized()
         
-    def showOpenFileDialog(self):
+# ----------------------------------------------------------------------------
+# Other functions
+# ----------------------------------------------------------------------------
 
-        file_name, _ = QtGui.QFileDialog.getOpenFileName(self, 'Open file',
-                    '~/')
-        
-        f = open(file_name)
-        print(f.name)
-        
-        # this is where we will need to send the retrieved path to Matt's script
 
-def main():
+def use_open_file_dialog(window, function_to_pass_filename):
+    """
+    showOpenFileDialog
+    Description: returns a function that is able to open the file dialog, and then pass
+        the filename returned to another function that can do something with the filename.
+        This abstraction is done because we may need to trigger an open a file dialog for a lot of things,
+        but what we do with that file may be different, so we want to allow ourselves to open
+        a file, but call a different action after that.  The returned function is what the
+        QT triggered.connect() method needs
+    Input: 
+        window (QtGui.QtMainWindow) the window that the open file dialog originates from
+        function_to_pass_filename (function) a function that has 1 parameter for a file path
+            ending with the filename
+    Output: (function) function that opens a file dialog, then calls a unique function that
+        does something with a filename
+    """
+    def filename_handler():
+        # show the open file dialog and get the filename
+        filename, _ = QtGui.QFileDialog.getOpenFileName(window, 'Open file', '~/')
+        # call the unique function that does something with the filename
+        function_to_pass_filename(filename)
     
-    application = QtGui.QApplication(sys.argv)
-    this_screen = MainScreen()
-    sys.exit(application.exec_())
+    return filename_handler
 
-
-if __name__ == '__main__':
-    main()
+def foo(filename):
+    print "poop %s" % filename
