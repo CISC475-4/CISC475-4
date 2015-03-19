@@ -7,8 +7,8 @@ The entry point for the application.  Starts the UI.
 import sys
 from PySide import QtGui
 
-from Controller.controller import Controller
-from UI.mainui import MainScreen
+from controller.controller import Controller
+from ui.mainui import MainScreen
 
 
 def main():
