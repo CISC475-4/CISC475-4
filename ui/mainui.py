@@ -3,6 +3,8 @@
 
 import sys
 from PySide import QtGui
+import viztoolbar
+import vizmenubar
 
 
 class MainScreen(QtGui.QMainWindow):
@@ -15,7 +17,7 @@ class MainScreen(QtGui.QMainWindow):
         __init__
         Description: Creates an instance of MainScreen.
         Input:
-            controller (Controller instance) initialized instance of the controller
+        controller (Controller instance) initialized instance of the controller
         """
         super(MainScreen, self).__init__()
 
@@ -25,59 +27,55 @@ class MainScreen(QtGui.QMainWindow):
         self.init_ui()
 
     def init_ui(self):
-        # TODO: Separate out components of UI in classes or separate functions. e.g. separate toolbar
 
-        # set up exit action and its properties
-        exit_action = QtGui.QAction(QtGui.QIcon('ui/ui_assets/run.png'), '&XLStoCSV', self)
-        exit_action.setShortcut('Ctrl+Q')
-        exit_action.setStatusTip('Run Kelly\'s Script')
-        exit_action.triggered.connect(self.close)
-
-        # set up open file action and its properties
-        open_file_action = QtGui.QAction(QtGui.QIcon('ui/ui_assets/open.png'), 'Open', self)
-        open_file_action.setShortcut('Ctrl+O')
-        open_file_action.setStatusTip('Open new File')
-        open_file_action.triggered.connect(use_open_file_dialog(self, self.controller.import_file_to_database))
-
+        self.setup_actions()
+        
         # add status bar
         self.statusBar()
 
         # create the menu bar, by default on Mac OS it is in top menu bar
-        menubar = self.menuBar()
-       
-        action_menu = menubar.addMenu('&Actions')
-        action_menu.addAction(exit_action)
-        action_menu.addAction(open_file_action)
-
-        # add the toolbar and stick action on it
-        toolbar = self.addToolBar('XLStoCSV')
-        toolbar.addAction(exit_action)
-        toolbar.addAction(open_file_action)
+        self.menubar = vizmenubar.VizMenuBar(self)
+        
+        # add the toolbar
+        self.toolbar = viztoolbar.VizToolBar(self)
 
         # window props
         self.setWindowTitle('Data Visualization')
-        self.showMaximized()
+        self.showMaximized()   
+
+    def setup_actions(self):
+
+        # set up exit action and its properties
+        self.exit_action = QtGui.QAction(QtGui.QIcon('ui/ui_assets/run.png'), '&XLStoCSV', self)
+        self.exit_action.setShortcut('Ctrl+Q')
+        self.exit_action.setStatusTip('Run Kelly\'s Script')
+        self.exit_action.triggered.connect(self.close)
+
+        # set up open file action and its properties
+        self.open_file_action = QtGui.QAction(QtGui.QIcon('ui/ui_assets/open.png'), 'Open', self)
+        self.open_file_action.setShortcut('Ctrl+O')
+        self.open_file_action.setStatusTip('Open new File')
+        self.open_file_action.triggered.connect(use_open_file_dialog(self, self.controller.import_file_to_database))     
 
 # ----------------------------------------------------------------------------
 # Other functions
 # ----------------------------------------------------------------------------
 
-
 def use_open_file_dialog(window, function_to_pass_filename):
     """
     showOpenFileDialog
     Description: returns a function that is able to open the file dialog, and then pass
-        the filename returned to another function that can do something with the filename.
-        This abstraction is done because we may need to trigger an open a file dialog for a lot of things,
-        but what we do with that file may be different, so we want to allow ourselves to open
-        a file, but call a different action after that.  The returned function is what the
-        QT triggered.connect() method needs
+    the filename returned to another function that can do something with the filename.
+    This abstraction is done because we may need to trigger an open a file dialog for a lot of things,
+    but what we do with that file may be different, so we want to allow ourselves to open
+    a file, but call a different action after that.  The returned function is what the
+    QT triggered.connect() method needs
     Input:
-        window (QtGui.QtMainWindow) the window that the open file dialog originates from
-        function_to_pass_filename (function) a function that has 1 parameter for a file path
-            ending with the filename
+    window (QtGui.QtMainWindow) the window that the open file dialog originates from
+    function_to_pass_filename (function) a function that has 1 parameter for a file path
+    ending with the filename
     Output: (function) function that opens a file dialog, then calls a unique function that
-        does something with a filename
+    does something with a filename
     """
     def filename_handler():
         # show the open file dialog and get the filename
