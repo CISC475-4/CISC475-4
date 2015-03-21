@@ -15,51 +15,80 @@ from time import time
 from re import sub
 
 
-class Instance(object):
+class DataSet(object):
     """
-    A data instances given data type headers and the corresponding values.
-    Instances are stored in a dictionary (Instance.Data) where the headers are keys
+    DataSet object represents all data points from an XLS worksheet
 
-    IE. an Instance is a single row in a spreadsheet with corresponding data header, for single key-value pairs
+    Data - A dictionary of columns (String) with all corresponding data types (List of values)
+        Keys - individual columns
+        Values - A list of values in index order of the instances from the spreasheet
+                 all data points for instance i can be found at Data.Keys(x)[i] 
+                 for all xeX where X is the set of off Keys in the the dictionary, Data
     """
+
     #TODO: add metadata for each related instance 
-
-
-    """
-    __init__ input: header is a list of headers
-		                values is a list of values
-    """
-    def __init__(self, header=[], values=[]):
+    def __init__(self, column=[]):
         self.Data = {}
+        for i in range(0,len(column)):
+            self.Data[column[i]] = [] #instances should be added individually
 
-        for i in range(0, len(header)):
-            self.Data[header[i]] = values[i]
 
     def __repr__(self):
         return str(self.Data)
 
 
+    def add_instance(self, columns, values):
+        """
+        columns - to ensure the data is placed in the correct list
+        values - list of values to columns
+        add_datapoint adds a new data instances to the end of the Data.values list corresponding to the same data column (from input)
+        """
+        for i in range(0,len(columns)):
+            self.Data[columns[i]].append(values[i])
+
+    def get_instance_at(self, index):
+        """
+        retrieves in dictionary representation an instance at a give index
+        """
+        if index >= len(self.Data.values()[0]):
+            print >> sys.stderr, "DataSet.get_instance_at(%d): no such instance" % (index)
+            return 
+
+        instance = {}
+        for key in self.Data:
+            instance[key] = self.Data[key][index]
+        return instance
+        
+
+    def dataset_to_database(self, database):
+        """
+        pushes the whole dataset into the database
+        """
+        pass
+
 def get_data_from(path):
 
     """
-    performs the simple tasks of reading in data instances.
-    Returns a tuple of data instances and the corresponding column headers
+    reads in data from csv and adds instances to a DataSet object. Returns the created object
     """
-
-    columns = []     # the headers
-    instances = []   # a set of Instances
+    dataset = None
 
     try:
         with open(str(path), 'r') as dataFile:
             columns = dataFile.readline().strip().split(',')
+            #deal with duplicates once, before creating a dictionary 
+            for i in range(0,len(columns)):
+                if columns[i] in columns[i+1:]: #append index as a unique identifier
+                    columns[i] = columns[i] + "_" + str(i)
+
+            dataset = DataSet(columns)
             for nextLine in dataFile: 
-                d = nextLine.strip().split(',')
-                n = Instance(columns, d)
-                instances.append(n)
+                data_points = nextLine.strip().split(',')
+                dataset.add_instance(columns, data_points)
     except IOError:
         print >> sys.stderr, "Unable to open file at %s" % (path)
 
-    return (columns, instances)
+    return dataset
 
 
 def xls_to_csv(path):
