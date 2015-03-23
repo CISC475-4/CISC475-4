@@ -13,9 +13,9 @@ create table if not exists Session(
 -- b1, b2, and b3 are behaviors. As more are added, we set the existing records to NULL
 -- The behaviors will have to be translated using the code table later
 create table if not exists Chunk(
-	time real not null,
 	child_id numeric(5) not null,
 	session_id numeric(2) not null,
+	time real not null,
 	b1 numeric(1),
 	b2 numeric(1),
 	b3 numeric(1),
@@ -26,9 +26,9 @@ create table if not exists Chunk(
 --
 -- All the avg- columns are skipped, as they're simple to calculate 
 create table if not exists GroupData(
-	combo_index numeric(3),
 	child_id numeric(5) not null,
 	session_id numeric(2) not null,
+	combo_index numeric(3),
 	duration real not null,
 	num_chunks numeric(3) not null,
 	chunk_avg_dur real not null,
@@ -41,12 +41,13 @@ create table if not exists GroupData(
 -- Metadata about a Session. Includes things like the file it was loaded up from
 --
 -- Times are stored as numerics because they'll be 10 digit long UNIX timestamps
+-- Note: removed session_name from this. No name is assigned to a session beyond ID
 create table if not exists Session_Meta(
-	session_name varchar(255) not null,
 	child_id numeric(5) not null,
 	session_id numeric(2) not null,
 	time_loaded numeric(10) not null,
 	time_modified numeric(10) not null,
 	filename varchar(255) not null,
+  primary key (session_name, child_id, session_id),
 	foreign key(child_id, session_id) references Session
 );
