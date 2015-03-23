@@ -9,7 +9,6 @@ This accounts for the step between raw data and storage in the database
 
 import xlrd
 import sys
-import datetime
 
 from time import time
 from re import sub
@@ -24,13 +23,26 @@ class DataSet(object):
         Values - A list of values in index order of the instances from the spreasheet
                  all data points for instance i can be found at Data.Keys(x)[i] 
                  for all xeX where X is the set of off Keys in the the dictionary, Data
+    file_name - name of the file
+    sheet_name - name of the sheet of origin
+    TODO: sheet_function - type of data (either 'time series' or 'group')
+    time_accessed - time the file was opened to create the dataset
+    total_rows - number of data instances (rows in spreedsheet)
+    TODO: child_id - the child the data corresponds to
+    TODO: session_id - the session the data corresponds to
     """
-
-    #TODO: add metadata for each related instance 
-    def __init__(self, column=[]):
+    def __init__(self, column, file_name, sheet_name, sheet_function, time_accessed, total_rows, child_id, session_id):
         self.Data = {}
         for i in range(0,len(column)):
             self.Data[column[i]] = [] #instances should be added individually
+
+        self.file_name = file_name
+        self.sheet_name = sheet_name
+        self.sheet_fuction = sheet_function
+        self.time_accessed = time_accessed
+        self.total_rows = total_rows
+        self.child_id = child_id
+        self.session_id = session_id
 
 
     def __repr__(self):
@@ -48,16 +60,20 @@ class DataSet(object):
 
     def get_instance_at(self, index):
         """
-        retrieves in dictionary representation an instance at a give index
+        returns in dictionary representation an instance at a give index
         """
-        if index >= len(self.Data.values()[0]):
-            print >> sys.stderr, "DataSet.get_instance_at(%d): no such instance" % (index)
-            return 
-
         instance = {}
         for key in self.Data:
             instance[key] = self.Data[key][index]
         return instance
+
+
+    def get_next_instance(self):
+        """
+        generator function for retrieving data instances
+        """
+        for i in range(0, self.total_rows): 
+            yield self.get_instance_at(i)
         
 
     def dataset_to_database(self, database):
@@ -66,7 +82,57 @@ class DataSet(object):
         """
         pass
 
-def get_data_from(path):
+
+def parse_filename(filename):
+    """
+    parses a given string filename for the CHILD ID and SESSION ID
+    (change code here as the excel format changes)
+    """
+    pass
+
+
+def get_data_from_xls(path):
+    """
+    bypasses the step of converting an XLS spreedsheet into a CSV. Data is loaded to memory directly from the given XLS spreedsheet.
+    """
+    datasets = [] 
+    
+    try:
+        with xlrd.open_workbook(path) as wb: 
+            access_time = time()
+            file_name = ""
+            #TODO: get the actual filename
+            num_worksheets = wb.nsheets
+
+            for i in range(0, num_worksheets): 
+                doc = wb.sheet_by_index(i) #current workbook, loads to a single dataset object
+                rows = doc.nrows #includes the header in count. (Disclude for dataset instantiation)
+
+                columns = [str(cell) for cell in doc.row_values(0)]
+                for k in range(0,len(columns)):
+                    if columns[k] in columns[k+1:]:#append index as a unique identifier
+                        columns[k] = columns[k]+'_'+str(k)
+
+                dataset = DataSet(columns,file_name,doc.name,doc.name,access_time,rows-1,session_id, child_id)
+                #TODO: above, get correct sheet function 
+
+                for j in range(1, rows): 
+                    next_row = doc.row_values(j) 
+                    instance = []
+                    for cell in next_row: 
+                        if type(cell) == float and cell %1 == 0:
+                            cell = int(cell)
+                        instance.append(str(cell))
+                    dataset.add_instance(columns, instance) 
+                datasets.append(dataset)
+    except IOError: 
+        print >> sys.stderr, "Unable to open file at %s" % (path)
+        return 
+
+    return tuple(datasets) 
+        
+
+def get_data_from_csv(path):
 
     """
     reads in data from csv and adds instances to a DataSet object. Returns the created object
