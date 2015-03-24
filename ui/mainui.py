@@ -48,14 +48,19 @@ class MainScreen(QtGui.QMainWindow):
         # set up exit action and its properties
         self.exit_action = QtGui.QAction(QtGui.QIcon('ui/ui_assets/run.png'), '&XLStoCSV', self)
         self.exit_action.setShortcut('Ctrl+Q')
-        self.exit_action.setStatusTip('Run Kelly\'s Script')
+        self.exit_action.setStatusTip('XLStoCSV')
         self.exit_action.triggered.connect(self.close)
 
         # set up open file action and its properties
         self.open_file_action = QtGui.QAction(QtGui.QIcon('ui/ui_assets/open.png'), 'Open', self)
         self.open_file_action.setShortcut('Ctrl+O')
-        self.open_file_action.setStatusTip('Open new File')
-        self.open_file_action.triggered.connect(use_open_file_dialog(self, self.controller.import_file_to_database))     
+        self.open_file_action.setStatusTip('Open new file')
+        self.open_file_action.triggered.connect(use_open_file_dialog(self, self.controller.import_file_to_database))
+
+        self.save_file_action = QtGui.QAction(QtGui.QIcon('ui/ui_assets/save.png'), 'Save', self)
+        self.save_file_action.setShortcut('Ctrl+S')
+        self.save_file_action.setStatusTip('Save current file')
+        self.save_file_action.triggered.connect(use_open_file_dialog(self, self.controller.import_file_to_database)) # need to refactor
 
 # ----------------------------------------------------------------------------
 # Other functions
