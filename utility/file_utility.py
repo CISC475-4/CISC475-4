@@ -11,7 +11,8 @@ import xlrd
 import sys
 
 from time import time
-from re import sub
+from re import sub, findall
+from os import path as ospath
 
 
 class DataSet(object):
@@ -28,8 +29,8 @@ class DataSet(object):
     TODO: sheet_function - type of data (either 'time series' or 'group')
     time_accessed - time the file was opened to create the dataset
     total_rows - number of data instances (rows in spreedsheet)
-    TODO: child_id - the child the data corresponds to
-    TODO: session_id - the session the data corresponds to
+    child_id - the child the data corresponds to
+    session_id - the session the data corresponds to
     """
     def __init__(self, column, file_name, sheet_name, sheet_function, time_accessed, total_rows, child_id, session_id):
         self.Data = {}
@@ -83,14 +84,6 @@ class DataSet(object):
         pass
 
 
-def parse_filename(filename):
-    """
-    parses a given string filename for the CHILD ID and SESSION ID
-    (change code here as the excel format changes)
-    """
-    pass
-
-
 def get_data_from_xls(path):
     """
     bypasses the step of converting an XLS spreedsheet into a CSV. Data is loaded to memory directly from the given XLS spreedsheet.
@@ -100,20 +93,18 @@ def get_data_from_xls(path):
     try:
         with xlrd.open_workbook(path) as wb: 
             access_time = time()
-            file_name = ""
-            #TODO: get the actual filename
+            file_name = ospath.basename(path)
+            ids = parse_filename(file_name)
+
             num_worksheets = wb.nsheets
 
             for i in range(0, num_worksheets): 
                 doc = wb.sheet_by_index(i) #current workbook, loads to a single dataset object
                 rows = doc.nrows #includes the header in count. (Disclude for dataset instantiation)
 
-                columns = [str(cell) for cell in doc.row_values(0)]
-                for k in range(0,len(columns)):
-                    if columns[k] in columns[k+1:]:#append index as a unique identifier
-                        columns[k] = columns[k]+'_'+str(k)
+                columns = uniqify_list([str(cell) for cell in doc.row_values(0)])
 
-                dataset = DataSet(columns,file_name,doc.name,doc.name,access_time,rows-1,session_id, child_id)
+                dataset = DataSet(columns,file_name,doc.name,doc.name,access_time,rows-1,ids[0],ids[1])
                 #TODO: above, get correct sheet function 
 
                 for j in range(1, rows): 
@@ -141,16 +132,20 @@ def get_data_from_csv(path):
 
     try:
         with open(str(path), 'r') as dataFile:
-            columns = dataFile.readline().strip().split(',')
-            #deal with duplicates once, before creating a dictionary 
-            for i in range(0,len(columns)):
-                if columns[i] in columns[i+1:]: #append index as a unique identifier
-                    columns[i] = columns[i] + "_" + str(i)
+            access_time = time()
+            file_name = ospath.basename(path)
+            ids = parse_filename(file_name)
 
-            dataset = DataSet(columns)
+            #deal with duplicates once, before creating a dictionary 
+            columns = uniqify_list(dataFile.readline().strip().split(','))
+            rows = 1
+
+            dataset = DataSet(columns,file_name,file_name,file_name,access_time,rows,ids[0],ids[1])
             for nextLine in dataFile: 
                 data_points = nextLine.strip().split(',')
                 dataset.add_instance(columns, data_points)
+                rows += 1
+            dataset.total_rows = rows
     except IOError:
         print >> sys.stderr, "Unable to open file at %s" % (path)
 
@@ -196,3 +191,28 @@ def xls_to_csv(path):
         return 
 
     return tuple(names)
+
+
+def uniqify_list(str_list):
+    """
+    give duplicate elemnts in a list of string a unique name by appending it's index in the list
+    """ 
+    for k in range(0,len(str_list)):
+        if str_list[k] in str_list[k+1:]:#append index as a unique identifier
+            str_list[k] = str_list[k]+'_'+str(k)
+
+    return str_list
+
+
+def parse_filename(filename):
+    """
+    parses a given string filename for the CHILD ID and SESSION ID
+    format:
+        Output_[0-9]+_Training_D[0-9]+.{csv,xls(x)}
+               ======           ======
+               CHILD_ID         SESSION_ID
+    (change code here as the excel format changes)
+    """
+    ids = findall('[0-9]+', filename)
+    return tuple(ids) #CHILD_ID, SESSION_ID
+    
