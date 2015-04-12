@@ -14,7 +14,7 @@ from controller.controller import Controller
 def main():
     # Initialize the controller
     main_controller = Controller()
-    main_controller.import_file_to_database('example.xlsx')
+    main_controller.import_file_to_database('tests/test_data/Output_20274_Training_D1_.xlss')
 
     #application = QtGui.QApplication(sys.argv)
     ## Initialize the MainScreen (main window of the UI) and pass it our controller
