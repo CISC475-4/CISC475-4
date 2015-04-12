@@ -214,5 +214,9 @@ def parse_filename(filename):
     (change code here as the excel format changes)
     """
     ids = findall('[0-9]+', filename)
+    if len(ids) != 2:
+        print >> sys.stderr, "unexpected filename"
+        return 
+
     return tuple(ids) #CHILD_ID, SESSION_ID
     

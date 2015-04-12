@@ -5,10 +5,10 @@ The entry point for the application.  Starts the UI.
 """
 
 import sys
-from PySide import QtGui
+#from PySide import QtGui
 
 from controller.controller import Controller
-from ui.mainui import MainScreen
+#from ui.mainui import MainScreen
 
 
 def main():

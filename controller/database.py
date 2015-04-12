@@ -40,7 +40,17 @@ class DatabaseManager(object):
         if not os.path.isfile(filename):
             print >> sys.stderr, "Controller: Error: Tried to import a nonexistent file"
             sys.exit(1)
-        datasets = utility.file_utility.get_data_from_xls(filename) # tuple of DataSet objects
+        # determine if the file is a csv or xls[x]
+        # 0. snag datasets into memoriy
+        datasets = None
+        if ".csv" in os.path.splittext(filename)[1]: 
+            datasets = import_csv_to_database(filename)
+        elif ".xls" in os.path.splittext(filename)[1]:
+            datasets = import_xls_to_database(filename)
+     xlselse
+            print >> sys.stderr, "incorrect file type"
+            return
+ 
         cur = self.connect()
         # iterate through dataset rows and insert
         # 1. Insert new row in Session
@@ -64,13 +74,17 @@ class DatabaseManager(object):
     def import_excel_to_database(self, filename):
         """
         import_excel_to_database
-        Description:
+        Description: returns a the imported datasets
         """
-        pass
+        datasets = utility.file_utility.get_data_from_xls(filename) # tuple of DataSet objects			
+        return datasets
+
 
     def import_csv_to_database(self, filename):
         """
         import_csv_to_database
         Description:
         """
-        pass
+        datasets = utility.file_utility.get_data_from_csv(filename) # tuple of DataSet objects
+        return datasets
+        
