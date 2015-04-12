@@ -12,6 +12,7 @@ import sys
 
 from time import time
 from re import sub, findall
+from os import path as ospath
 
 
 class DataSet(object):
@@ -28,8 +29,8 @@ class DataSet(object):
     TODO: sheet_function - type of data (either 'time series' or 'group')
     time_accessed - time the file was opened to create the dataset
     total_rows - number of data instances (rows in spreedsheet)
-    TODO: child_id - the child the data corresponds to
-    TODO: session_id - the session the data corresponds to
+    child_id - the child the data corresponds to
+    session_id - the session the data corresponds to
     """
     def __init__(self, column, file_name, sheet_name, sheet_function, time_accessed, total_rows, child_id, session_id):
         self.Data = {}
@@ -92,8 +93,7 @@ def get_data_from_xls(path):
     try:
         with xlrd.open_workbook(path) as wb: 
             access_time = time()
-            file_name = search('\.*\.xls[x]$', filename)
-            print filename
+            file_name = ospath.basename(path)
             ids = parse_filename(file_name)
 
             num_worksheets = wb.nsheets
@@ -133,7 +133,7 @@ def get_data_from_csv(path):
     try:
         with open(str(path), 'r') as dataFile:
             access_time = time()
-            file_name = ""
+            file_name = ospath.basename(path)
             ids = parse_filename(file_name)
 
             #deal with duplicates once, before creating a dictionary 
