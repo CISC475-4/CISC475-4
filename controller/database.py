@@ -3,6 +3,7 @@ import utility.file_utility
 import sqlite3
 import os
 import sys
+import logging
 
 '''
 Jamie's notes
@@ -71,7 +72,7 @@ class DatabaseManager(object):
         with open(sql_filename, 'r') as schema:
             self.cursor.executescript(schema.read())  # catch 'em all
         changes = self.commit()
-        print 'DatabaseManager: loaded schema {fn} successfully'.format(fn=sql_filename)
+        logging.info('DatabaseManager: loaded schema {fn} successfully'.format(fn=sql_filename))
 
     def commit(self):
         ''' commits any pending changes and returns the total number of updated rows
@@ -83,24 +84,24 @@ class DatabaseManager(object):
         return amt_changes
 
     def import_file_to_database(self, filename):
-        """
+        '''
         Params: filename (string) the relative path of the file
         Return: none
         Will raise an exception or error if the data is already in the DB
         TODO: Exception handling for existing data
-        """
+        '''
         if not os.path.isfile(filename):
-            print >> sys.stderr, "DatabaseManager: Error: Tried to import a nonexistent file"
+            logging.error('DatabaseManager: Error: Tried to import a nonexistent file')
             sys.exit(1)
         # determine if the file is a csv or xls[x]
         # 0. snag datasets into memoriy
         datasets = None
-        if ".csv" in os.path.splitext(filename)[1]: 
+        if '.csv' in os.path.splitext(filename)[1]: 
             datasets = self.import_csv_to_database(filename)
-        elif ".xls" in os.path.splitext(filename)[1]:
+        elif '.xls' in os.path.splitext(filename)[1]:
             datasets = self.import_excel_to_database(filename)
         else:
-            print >> sys.stderr, "incorrect file type"
+            logging.error('DatabaseManager: incorrect file type')
             return
  
         cur = self.connect()
@@ -126,22 +127,22 @@ class DatabaseManager(object):
         if changes == 0:
             raise Exception('Inserted 0 rows into the DB on filename {fn}! Was this intentional?'.format(fn=filename))
         else:
-            print 'DatabaseManager: Successfully loaded {fn}'.format(fn=filename)
+            logging.info('DatabaseManager: Successfully loaded {fn}'.format(fn=filename))
 
     def import_excel_to_database(self, filename):
-        """
+        '''
         import_excel_to_database
         Description: returns a the imported datasets
-        """
+        '''
         datasets = utility.file_utility.get_data_from_xls(filename) # tuple of DataSet objects			
         return datasets
 
 
     def import_csv_to_database(self, filename):
-        """
+        '''
         import_csv_to_database
         Description:
-        """
+        '''
         datasets = utility.file_utility.get_data_from_csv(filename) # tuple of DataSet objects
         return datasets
         

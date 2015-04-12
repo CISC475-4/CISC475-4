@@ -5,20 +5,22 @@ The entry point for the application.  Starts the UI.
 """
 
 import sys
-#from PySide import QtGui
-
+from PySide import QtGui
+import logging
 from controller.controller import Controller
-#from ui.mainui import MainScreen
+from ui.mainui import MainScreen
 
 
 def main():
+    # Set up log format and streams
+    logging.basicConfig(format='%(asctime)s:%(filename)s:%(levelname)s:%(message)s', stream=sys.stderr, level=logging.INFO)
     # Initialize the controller
     main_controller = Controller()
     ### This block of commented-out code shows you how to use our DB!
     ### This method should be called before any DB interactions
-    #main_controller.setup_db()
+    main_controller.setup_db()
     ### This is how you load a specific file into the DB 
-    #main_controller.import_file_to_database('Output_20274_Training_D1_.xlsx')
+    main_controller.import_file_to_database('Output_20274_Training_D1_.xlsx')
     #main_controller.import_file_to_database('Output_40323_Training_D1_.xlsx')
 
     application = QtGui.QApplication(sys.argv)
