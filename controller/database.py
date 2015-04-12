@@ -43,11 +43,11 @@ class DatabaseManager(object):
         # determine if the file is a csv or xls[x]
         # 0. snag datasets into memoriy
         datasets = None
-        if ".csv" in os.path.splittext(filename)[1]: 
-            datasets = import_csv_to_database(filename)
-        elif ".xls" in os.path.splittext(filename)[1]:
-            datasets = import_xls_to_database(filename)
-     xlselse
+        if ".csv" in os.path.splitext(filename)[1]: 
+            datasets = self.import_csv_to_database(filename)
+        elif ".xls" in os.path.splitext(filename)[1]:
+            datasets = self.import_excel_to_database(filename)
+        else:
             print >> sys.stderr, "incorrect file type"
             return
  
