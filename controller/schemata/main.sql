@@ -48,6 +48,6 @@ create table if not exists Session_Meta(
 	time_loaded numeric(10) not null,
 	time_modified numeric(10) not null,
 	filename varchar(255) not null,
-  primary key (session_name, child_id, session_id),
+  primary key (filename, child_id, session_id),
 	foreign key(child_id, session_id) references Session
 );

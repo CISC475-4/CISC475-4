@@ -13,6 +13,12 @@ class Controller:
 
     def __init__(self):
         self.db = database.DatabaseManager()
+        self.db.connect() # this creates the cursor object
+
+    def setup_db(self):
+        # if the schema has already been loaded, don't perform the init operation
+        if not self.db.check_db_setup():
+            self.db.setup()
 
     def import_file_to_database(self, filename):
         self.db.import_file_to_database(filename)
