@@ -1,6 +1,6 @@
 #!/usr/bin/env python2
 import utility.file_utility
-import controller.database
+import database
 import sqlite3
 import os
 import sys
@@ -12,7 +12,7 @@ Controller Class for the application.
 class Controller:
 
     def __init__(self):
-        self.db = DatabaseManager()
+        self.db = database.DatabaseManager()
 
     def import_file_to_database(self, filename):
         self.db.import_file_to_database(filename)
