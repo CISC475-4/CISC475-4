@@ -40,7 +40,7 @@ class DatabaseManager(object):
         if not os.path.isfile(filename):
             print >> sys.stderr, "Controller: Error: Tried to import a nonexistent file"
             sys.exit(1)
-        datasets = file_utility.get_data_from_xls(filename) # tuple of DataSet objects
+        datasets = utility.file_utility.get_data_from_xls(filename) # tuple of DataSet objects
         cur = self.connect()
         # iterate through dataset rows and insert
         # 1. Insert new row in Session
