@@ -7,25 +7,26 @@ from PySide import QtGui, QtCore
 import viztoolbar
 import vizmenubar
 from numpy import arange, sin, pi
-import matplotlib
-matplotlib.use('Qt4Agg')
-matplotlib.rcParams['backend.qt4']='PySide'
+import matplotlib as mpl
+mpl.use('Qt4Agg')
+mpl.rcParams['backend.qt4']='PySide'
 from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
+from matplotlib import pyplot
 
 # copied from http://matplotlib.org/examples/user_interfaces/embedding_in_qt4.html
 class MyMplCanvas(FigureCanvas):
     """Ultimately, this is a QWidget (as well as a FigureCanvasAgg, etc.)."""
     def __init__(self, parent=None, width=5, height=4, dpi=100):
-        fig = Figure(figsize=(width, height), dpi=dpi)
-        self.axes = fig.add_subplot(111)
+        self.fig = Figure(figsize=(width, height), dpi=dpi)
+        self.axes = self.fig.add_subplot(111)
         # We want the axes cleared every time plot() is called
         self.axes.hold(False)
 
         self.compute_initial_figure()
 
         #
-        FigureCanvas.__init__(self, fig)
+        FigureCanvas.__init__(self, self.fig)
         self.setParent(parent)
 
         FigureCanvas.setSizePolicy(self,
@@ -41,9 +42,19 @@ class MyMplCanvas(FigureCanvas):
 class MyStaticMplCanvas(MyMplCanvas):
     """Simple canvas with a sine plot."""
     def compute_initial_figure(self):
-        t = arange(0.0, 3.0, 0.01)
-        s = sin(2*pi*t)
-        self.axes.plot(t, s)
+        # The four colors in order from left to right
+        # cmap will hold the data
+        cmap = mpl.colors.ListedColormap([[0., .4, 1.], [0., .8, 1.],
+            [1., .8, 0.], [1., .4, 0.]])
+        cmap.set_over((1., 0., 0.))
+        cmap.set_under((0., 0., 1.))
+        # bounds will be the timestamps
+        bounds = [1, 2, 3, 4, 5]
+        norm = mpl.colors.BoundaryNorm(bounds, cmap.N)
+        colorbar = mpl.colorbar.ColorbarBase(self.axes, cmap=cmap,
+                                   norm=norm,
+                                   boundaries=bounds,
+                                   orientation='horizontal')
 
 
 # copied from http://matplotlib.org/examples/user_interfaces/embedding_in_qt4.html
@@ -107,9 +118,13 @@ class MainScreen(QtGui.QMainWindow):
         # set-up matplotlib canvas
         l = QtGui.QVBoxLayout(self.main_widget)
         sc = MyStaticMplCanvas(self.main_widget, width=5, height=4, dpi=100)
-        dc = MyDynamicMplCanvas(self.main_widget, width=5, height=4, dpi=100)
         l.addWidget(sc)
-        l.addWidget(dc)
+        sc2 = MyStaticMplCanvas(self.main_widget, width=5, height=4, dpi=100)
+        l.addWidget(sc2)
+        sc3 = MyStaticMplCanvas(self.main_widget, width=5, height=4, dpi=100)
+        l.addWidget(sc3)
+        sc4 = MyStaticMplCanvas(self.main_widget, width=5, height=4, dpi=100)
+        l.addWidget(sc4)
 
         self.main_widget.setFocus()
         self.setCentralWidget(self.main_widget)
