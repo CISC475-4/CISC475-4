@@ -57,11 +57,6 @@ class MainScreen(QtGui.QMainWindow):
         self.open_file_action.setStatusTip('Open new file')
         self.open_file_action.triggered.connect(use_open_file_dialog(self, self.controller.import_file_to_database))
 
-        self.save_file_action = QtGui.QAction(QtGui.QIcon('ui/ui_assets/save.png'), 'Save', self)
-        self.save_file_action.setShortcut('Ctrl+S')
-        self.save_file_action.setStatusTip('Save current file')
-        self.save_file_action.triggered.connect(use_open_file_dialog(self, self.controller.import_file_to_database)) # need to refactor
-
 # ----------------------------------------------------------------------------
 # Other functions
 # ----------------------------------------------------------------------------
