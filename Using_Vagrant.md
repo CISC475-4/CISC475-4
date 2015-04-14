@@ -1,4 +1,4 @@
-Using Vagrant:
+#Using Vagrant
 
 1. Have [vagrant](https://www.vagrantup.com/downloads.html 'Download link') 
    installed on your machine. 
@@ -18,3 +18,7 @@ To destroy the VM, use `vagrant destroy`
 To start, or restart the VM from suspend, use `vagrant up`  
 (I'm not sure of this) To update the VM when new stuff is added, use 
 `vagrant reload --provision`   
+
+If you're using VirtualBox (and vagrant) on Linux, you'll have to make sure
+your VirtualBox kernel modules are enabled:
+        # modprobe vboxdrv
