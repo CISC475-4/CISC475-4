@@ -143,6 +143,12 @@ class MainScreen(QtGui.QMainWindow):
         self.open_file_action.setStatusTip('Open new file')
         self.open_file_action.triggered.connect(use_open_file_dialog(self, self.controller.import_file_to_database))
 
+        # set up export graph action
+        self.export_action = QtGui.QAction(QtGui.QIcon('ui/ui_assets/download.png'), 'Export', self)
+        self.export_action.setShortcut('Ctrl+S')
+        self.export_action.setStatusTip('Export graph')
+        self.export_action.triggered.connect(export_graph)
+
 # ----------------------------------------------------------------------------
 # Other functions
 # ----------------------------------------------------------------------------
@@ -170,3 +176,6 @@ def use_open_file_dialog(window, function_to_pass_filename):
         function_to_pass_filename(filename)
 
     return filename_handler
+
+def export_graph():
+    print("Exported")
