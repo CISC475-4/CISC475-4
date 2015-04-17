@@ -30,3 +30,14 @@ class Controller:
         Description:
         """
         pass
+
+
+    #TODO: rename conditional_selects later
+    def conditional_selects(select, conditions):
+        '''
+        considering select statements requesting certain conditions
+        select - a list of columns we want all row data from
+        conditions - a dictionary of columns mapped to a list of values 
+        '''
+        #need a cursor
+        pass
