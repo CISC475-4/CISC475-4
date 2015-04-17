@@ -9,7 +9,7 @@ This accounts for the step between raw data and storage in the database
 
 import xlrd
 import sys
-
+import logging
 from time import time
 from re import sub, findall
 from os import path as ospath
@@ -117,7 +117,7 @@ def get_data_from_xls(path):
                     dataset.add_instance(columns, instance) 
                 datasets.append(dataset)
     except IOError: 
-        print >> sys.stderr, "Unable to open file at %s" % (path)
+        logging.error("FileUtility: Unable to open file at %s" % (path))
         return 
 
     return tuple(datasets) 
@@ -147,7 +147,7 @@ def get_data_from_csv(path):
                 rows += 1
             dataset.total_rows = rows
     except IOError:
-        print >> sys.stderr, "Unable to open file at %s" % (path)
+        logging.error("FileUtility: Unable to open file at %s" % (path))
 
     return dataset
 
@@ -187,7 +187,7 @@ def xls_to_csv(path):
                 wb.unload_sheet(i)
                 csv.close()
     except IOError:
-        print >> sys.stderr, "Unable to open file at %s" % (path)
+        logging.error("FileUtility: Unable to open file at %s" % (path))
         return 
 
     return tuple(names)
@@ -215,7 +215,7 @@ def parse_filename(filename):
     """
     ids = findall('[0-9]+', filename)
     if len(ids) != 2:
-        print >> sys.stderr, "unexpected filename"
+        logging.error("FileUtility: unexpected filename")
         return 
 
     return tuple(ids) #CHILD_ID, SESSION_ID

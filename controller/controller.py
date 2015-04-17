@@ -1,9 +1,6 @@
 #!/usr/bin/env python2
 import utility.file_utility
 import database
-import sqlite3
-import os
-import sys
 
 """
 Controller Class for the application.
