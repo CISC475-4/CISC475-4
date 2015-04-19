@@ -98,4 +98,4 @@ def use_open_file_dialog(window, function_to_pass_filename):
 
 def export_graph(self):
     # purely checking for functionality, need to set up a catch for when there is no graph drawn
-    self.s3.savefig("foo.png", bbox_inches='tight')
+    pyplot.savefig("foo.png", bbox_inches='tight')
