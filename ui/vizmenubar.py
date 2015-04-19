@@ -11,7 +11,6 @@ class VizMenuBar():
     def __init__(self, window):
         self.window = window
         self.init_menubar()
-        
 
     def init_menubar(self):
         self.menubar = self.window.menuBar()
