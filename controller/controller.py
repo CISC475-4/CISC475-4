@@ -21,12 +21,14 @@ class Controller:
         self.db.import_file_to_database(filename)
 
     # TODO: Do we need to specify whether or not we want time data?
-    def retrieve_graph_data(x_label, y_label, z_label):
+    def retrieve_graph_data(self, x_label, y_label, z_label):
         """
         retrieve_graph_data
-        Description:
+        Description: by default, retrieve all data from Chunk tabel. No with no constraints
         """
-        pass
+        cursor = self.db.sql_conn.cursor()
+        cursor.execute("SELECT " + x_label + "," + y_label + "," + z_label + "  FROM Chunk")  
+        return cursor.fetchall() #a list of data rows
 
 
     #TODO: rename conditional_selects later
@@ -36,5 +38,4 @@ class Controller:
         select - a list of columns we want all row data from
         conditions - a dictionary of columns mapped to a list of values 
         '''
-        #need a cursor
         pass
