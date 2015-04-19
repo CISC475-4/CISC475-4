@@ -42,8 +42,21 @@ class Controller:
             logging.error(e)
 
     # TODO: Do we need to specify whether or not we want time data?
-    def retrieve_graph_data(x_label, y_label, z_label):
+    def retrieve_graph_data(self, x_label, y_label, z_label):
         """
-        TODO: write function header
+        retrieve_graph_data
+        Description: by default, retrieve all data from Chunk tabel. No with no constraints
         """
+        cursor = self.db.sql_conn.cursor()
+        cursor.execute("SELECT " + x_label + "," + y_label + "," + z_label + "  FROM Chunk")  
+        return cursor.fetchall() #a list of data rows
+
+
+    #TODO: rename conditional_selects later
+    def conditional_selects(select, conditions):
+        '''
+        considering select statements requesting certain conditions
+        select - a list of columns we want all row data from
+        conditions - a dictionary of columns mapped to a list of values 
+        '''
         pass
