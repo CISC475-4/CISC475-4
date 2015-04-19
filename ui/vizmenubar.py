@@ -11,10 +11,10 @@ class VizMenuBar():
     def __init__(self, window):
         self.window = window
         self.init_menubar()
-        
 
     def init_menubar(self):
         self.menubar = self.window.menuBar()
         action_menu = self.menubar.addMenu('&Actions')
         action_menu.addAction(self.window.exit_action)
         action_menu.addAction(self.window.open_file_action)
+        action_menu.addAction(self.window.export_action)

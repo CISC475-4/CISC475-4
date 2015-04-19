@@ -11,10 +11,12 @@ can we use a connection.create_aggregate() for certain things?
 should replace the loading code with a 'cur.executemany' call that loops with her iter
 '''
 
-''' Database Wrapper Class
-Responsible for all interactions with the embedded sqlite3 DB
-'''
+
 class DatabaseManager(object):
+    '''
+    Database Wrapper Class
+    Responsible for all interactions with the embedded sqlite3 DB
+    '''
 
     def __init__(self, address='data.sqlite3', timeout=2):
         ''' create a DatabaseManager class
@@ -54,12 +56,12 @@ class DatabaseManager(object):
         temp_conn.text_factory = str
         temp_cur = temp_conn.cursor()
         existence = True
-        tablenames = ['Chunk','Session','GroupData','Session_Meta']
+        tablenames = ['Chunk', 'Session', 'GroupData', 'Session_Meta']
         for table in tablenames:
             temp_cur.execute("SELECT name FROM sqlite_master WHERE type='table' and name='{tbl}'".format(tbl=table))
             potential = temp_cur.fetchone()
             if potential is not None:
-                existence = (potential[0] == table) # if the 'Chunk' table exists, it is set up
+                existence = (potential[0] == table)  # if the 'Chunk' table exists, it is set up
             else:
                 existence = False
         temp_conn.close()
@@ -91,24 +93,22 @@ class DatabaseManager(object):
         TODO: Exception handling for existing data
         '''
         if not os.path.isfile(filename):
-            logging.error('DatabaseManager: Error: Tried to import a nonexistent file')
-            sys.exit(1)
+            raise IOError("File does not exist!")
         # determine if the file is a csv or xls[x]
         # 0. snag datasets into memoriy
         datasets = None
-        if '.csv' in os.path.splitext(filename)[1]: 
+        if '.csv' in os.path.splitext(filename)[1]:
             datasets = self.import_csv_to_database(filename)
         elif '.xls' in os.path.splitext(filename)[1]:
             datasets = self.import_excel_to_database(filename)
         else:
-            logging.error('DatabaseManager: incorrect file type')
-            return
- 
+            raise IOError("Incorrect file type! Expected .csv or .xls")
+
         cur = self.connect()
         # iterate through dataset rows and insert
         # 1. Insert new row in Session
-        allgroup = datasets[0] # all group data goes here
-        session_insert = "INSERT INTO Session values('{cid}','{sid}')".format(cid=allgroup.child_id,sid=allgroup.session_id)
+        allgroup = datasets[0]  # all group data goes here
+        session_insert = "INSERT INTO Session values('{cid}','{sid}')".format(cid=allgroup.child_id, sid=allgroup.session_id)
         self.cursor.execute(session_insert)
         # 2. Insert new Session_Meta
         meta_insert = "INSERT INTO Session_Meta values('{cid}','{sid}','{time_load}','{time_mod}','{filename}')".format(cid=allgroup.child_id, sid=allgroup.session_id, time_load=allgroup.time_accessed, time_mod=allgroup.time_accessed, filename=allgroup.file_name)
@@ -134,15 +134,13 @@ class DatabaseManager(object):
         import_excel_to_database
         Description: returns a the imported datasets
         '''
-        datasets = utility.file_utility.get_data_from_xls(filename) # tuple of DataSet objects			
+        datasets = utility.file_utility.get_data_from_xls(filename)  # tuple of DataSet objects
         return datasets
-
 
     def import_csv_to_database(self, filename):
         '''
         import_csv_to_database
         Description:
         '''
-        datasets = utility.file_utility.get_data_from_csv(filename) # tuple of DataSet objects
+        datasets = utility.file_utility.get_data_from_csv(filename)  # tuple of DataSet objects
         return datasets
-        
