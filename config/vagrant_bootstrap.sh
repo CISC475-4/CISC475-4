@@ -1,5 +1,11 @@
 #!/usr/bin/env bash
 
+# dictionaries-common causes some errors upon first boot. If we remove it now,
+# the apt-get upgrade should reinstall a working version. This also uninstalls
+# the miscfiles package, which will be reinstalled as needed by anything
+# upgraded or installed through the following apt-get commands.
+sudo apt-get remove dictionaries-common
+
 # Update the packages list to its newest version and upgrade all the packages
 sudo apt-get -y update
 sudo apt-get -y upgrade
@@ -29,7 +35,6 @@ sudo pip install -r /vagrant/config/requirements.txt
 
 # Install vagrant GUI stuff (http://stackoverflow.com/questions/18878117/)
 sudo echo "allowed_users=anybody" > /etc/X11/Xwrapper.config
-sudo VBoxClient-all
 
 # to run the GUI
 #   login as vagrant user.  (User: vagrant Password: vagrant)
