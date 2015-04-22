@@ -20,6 +20,8 @@ packages=(
 	"python-setuptools"       
 	"python-pip"              # Python dependency installations
 	"python-pyside"           # Brandon's visualization
+	"python-dev"							# Dependency For graph analysis libraries
+	"python-matplotlib"				# Python matplotlib library
 	"xfce4"                   # Vagrant box GUI
 	"virtualbox-guest-dkms"   # These are needed by VirtualBox
 	"virtualbox-guest-utils"  # They're used to do things like
