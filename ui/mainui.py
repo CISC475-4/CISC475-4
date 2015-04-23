@@ -66,7 +66,7 @@ class MainScreen(QtGui.QMainWindow):
         self.export_action = QtGui.QAction(QtGui.QIcon('ui/ui_assets/download.png'), 'Export', self)
         self.export_action.setShortcut('Ctrl+S')
         self.export_action.setStatusTip('Export graph')
-        self.export_action.triggered.connect(export_graph(self))
+        self.export_action.triggered.connect(export_graph)
 
 # ----------------------------------------------------------------------------
 # Other functions
@@ -98,4 +98,5 @@ def use_open_file_dialog(window, function_to_pass_filename):
 
 def export_graph(self):
     # purely checking for functionality, need to set up a catch for when there is no graph drawn
-    self.s3.savefig("foo.png", bbox_inches='tight')
+    #self.s3.savefig("foo.png", bbox_inches='tight')
+    print("Exported")
