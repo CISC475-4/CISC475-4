@@ -78,7 +78,7 @@ class Controller:
         returns a list of session_ids
         '''
         condition = {"child_id" : child_id }
-        return self.db.query_single_database("session_id", "Session", condition)
+        return self.db.query_single("session_id", "Session", condition)
 
     def get_data_by_child_id(self, columns, child_id):
         '''
