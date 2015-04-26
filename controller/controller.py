@@ -88,7 +88,7 @@ class Controller:
         condition = {"child_id" : child_id }
         return self.db.query_multiple(self, columns, "Chunk", condition)
 
-    def get_behaviors_for_child(self, behaviors, child_id, session_id=0, time_start=0, time_end=0)
+    def get_behaviors_for_child(self, behaviors, child_id, session_id=0, time_start=0, time_end=0):
         '''
         behaviors - a list of behaviors (column names)
         child_id - the child_id 
