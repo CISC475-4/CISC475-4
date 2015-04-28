@@ -1,23 +1,24 @@
 #!/usr/bin/env bash
 
-# Update the packages list to its newest version and upgrade all the packages
-sudo apt-get -y update
-sudo apt-get -y upgrade
+# This is supposed to fix the dictionaries-common errors we're getting
+sudo /usr/share/debconf/fix_db.pl
 
-# Install Python (if we want a newer version than 2.7.3)
-# /vagrant/config/vagrant_scripts/install_python.sh/Users/mhoffman/Documents/serenity_software/giving_shared 
+# Update the packages list to its newest version and upgrade all the packages
+sudo apt-get -y {update,upgrade,autoremove}
 
 # Install all needed packages available from the repo
 packages=(
 	"make"                    # GNU build system
-	"vim"                     # Convenient text editing
 	"python-setuptools"       
+	"python-dev"              # Dependency for graph analysis libraries
 	"python-pip"              # Python dependency installations
+	"python-matplotlib"       # Matplotlib and a bunch of related libraries
 	"python-pyside"           # Brandon's visualization
-	"xfce4"                   # Vagrant box GUI
+	"vim"                     # Convenient text editing
 	"virtualbox-guest-dkms"   # These are needed by VirtualBox
 	"virtualbox-guest-utils"  # They're used to do things like
 	"virtualbox-guest-x11"    # set the screen resolution.
+	"xfce4"                   # Vagrant box GUI
 )
 
 for pkg in "${packages[@]}"; do 
@@ -27,9 +28,13 @@ done
 # Install packages available via Pip
 sudo pip install -r /vagrant/config/requirements.txt
 
-# Install vagrant GUI stuff (http://stackoverflow.com/questions/18878117/)
+# Normally only root can start xfce. This allows anyone to start it.
 sudo echo "allowed_users=anybody" > /etc/X11/Xwrapper.config
-sudo VBoxClient-all
+
+# This execs xfce when you log into the terminal.
+echo "exec startxfce4" > ~/.xinitrc
+# This doesn't actually work, so I'm not sure what it's supposed to do.
+#sudo VBoxClient-all
 
 # to run the GUI
 #   login as vagrant user.  (User: vagrant Password: vagrant)
