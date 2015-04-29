@@ -96,7 +96,7 @@ def use_open_file_dialog(window, function_to_pass_filename):
 
     return filename_handler
 
-def export_graph(self):
+def export_graph():
     # purely checking for functionality, need to set up a catch for when there is no graph drawn
     #self.s3.savefig("foo.png", bbox_inches='tight')
     print("Exported")

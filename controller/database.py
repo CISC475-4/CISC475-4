@@ -11,10 +11,12 @@ can we use a connection.create_aggregate() for certain things?
 should replace the loading code with a 'cur.executemany' call that loops with her iter
 '''
 
-''' Database Wrapper Class
-Responsible for all interactions with the embedded sqlite3 DB
-'''
+
 class DatabaseManager(object):
+    '''
+    Database Wrapper Class
+    Responsible for all interactions with the embedded sqlite3 DB
+    '''
 
     def __init__(self, address='data.sqlite3', timeout=2):
         ''' create a DatabaseManager class
@@ -54,12 +56,12 @@ class DatabaseManager(object):
         temp_conn.text_factory = str
         temp_cur = temp_conn.cursor()
         existence = True
-        tablenames = ['Chunk','Session','GroupData','Session_Meta']
+        tablenames = ['Chunk', 'Session', 'GroupData', 'Session_Meta']
         for table in tablenames:
             temp_cur.execute("SELECT name FROM sqlite_master WHERE type='table' and name='{tbl}'".format(tbl=table))
             potential = temp_cur.fetchone()
             if potential is not None:
-                existence = (potential[0] == table) # if the 'Chunk' table exists, it is set up
+                existence = (potential[0] == table)  # if the 'Chunk' table exists, it is set up
             else:
                 existence = False
         temp_conn.close()
@@ -91,24 +93,22 @@ class DatabaseManager(object):
         TODO: Exception handling for existing data
         '''
         if not os.path.isfile(filename):
-            logging.error('DatabaseManager: Error: Tried to import a nonexistent file')
-            sys.exit(1)
+            raise IOError("File does not exist!")
         # determine if the file is a csv or xls[x]
         # 0. snag datasets into memoriy
         datasets = None
-        if '.csv' in os.path.splitext(filename)[1]: 
+        if '.csv' in os.path.splitext(filename)[1]:
             datasets = self.import_csv_to_database(filename)
         elif '.xls' in os.path.splitext(filename)[1]:
             datasets = self.import_excel_to_database(filename)
         else:
-            logging.error('DatabaseManager: incorrect file type')
-            return
- 
+            raise IOError("Incorrect file type! Expected .csv or .xls")
+
         cur = self.connect()
         # iterate through dataset rows and insert
         # 1. Insert new row in Session
-        allgroup = datasets[0] # all group data goes here
-        session_insert = "INSERT INTO Session values('{cid}','{sid}')".format(cid=allgroup.child_id,sid=allgroup.session_id)
+        allgroup = datasets[0]  # all group data goes here
+        session_insert = "INSERT INTO Session values('{cid}','{sid}')".format(cid=allgroup.child_id, sid=allgroup.session_id)
         self.cursor.execute(session_insert)
         # 2. Insert new Session_Meta
         meta_insert = "INSERT INTO Session_Meta values('{cid}','{sid}','{time_load}','{time_mod}','{filename}')".format(cid=allgroup.child_id, sid=allgroup.session_id, time_load=allgroup.time_accessed, time_mod=allgroup.time_accessed, filename=allgroup.file_name)
@@ -134,15 +134,98 @@ class DatabaseManager(object):
         import_excel_to_database
         Description: returns a the imported datasets
         '''
-        datasets = utility.file_utility.get_data_from_xls(filename) # tuple of DataSet objects			
+        datasets = utility.file_utility.get_data_from_xls(filename)  # tuple of DataSet objects
         return datasets
-
 
     def import_csv_to_database(self, filename):
         '''
         import_csv_to_database
         Description:
         '''
-        datasets = utility.file_utility.get_data_from_csv(filename) # tuple of DataSet objects
+        datasets = utility.file_utility.get_data_from_csv(filename)  # tuple of DataSet objects
         return datasets
+
+    def execute_query(self, query):
+        '''
+        This functions servers to actually query the database. 
+        '''
+        cursor = self.sql_conn.cursor()
+        cursor.execute(query)  
+        return cursor.fetchall() #a list of data rows
+
+
+
+    ## TODO: HERE BE ALL THE DB STUFF FOR FINAL IMPLEMENTATION
+    def retrieve_db_info(self, table=""):
+        '''
+        performs queries for such information as table names and full table info
+        '''
+        qry = ""
+        if table == "":
+            qry = "SELECT name FROM sqlite_master WHERE type='table'"
+        else:
+            # results as (col_num, col_name, type, ?, ?, ?)
+            qry = "PRAGMA table_info(" + table + ")"
+        print qry
+        return self.execute_query(qry)
+
+    def retrieve_distinct_by_name(self, column, table):
+        '''
+        call the database to query for all unique values of a given column from the specified table
+        ie: use to retrive all session_ids or child_ids from Session table
+        '''
+        qry = "SELECT DISTINCT " + column + " FROM " + table
+        return self.execute_query(qry)
+        
+    def query_single(self, column, table, conditions={}):
+        '''
+        column - a single column header to be retrieved from the database OR 
+        conditions (Optional) - a dictionary of column headers to the target value
+                - wil be used to create conditional statements in the query
+        NOTE: use this if for a 'SELECT *' statement
+        '''     
+        qry = "SELECT " + column + " FROM " + table
+        if conditions != {}:
+            #TODO: handle other conditions that are not plainly equivalent cases
+            qry += " WHERE "
+            for pair in conditions.iteritems():
+                # TODO: distinguish between numeric and non-numeric keys
+               qry += pair[0] + " = " + pair[1] + " and " # pair = (key,, value)
+            qry = qry[:len(qry)-4] # remove floating and 
+        return self.execute_query(qry)
+
+    def query_multiple(self, columns, table, conditions={}):
+        '''
+        columns - a list of colums to be retrieved
+        conditions (optional) - a dictionary of column headers to target value
+                - will be used to create conditional statements in the query 
+        '''
+        qry = "SELECT " 
+        for col in columns:
+            qry += col + ", "
+        qry = qry[:len(qry)-2]
+        qry += " FROM " + table
+
+        if conditions != {}:
+            qry += " WHERE " 
+            for pair in conditions.iteritems():
+                qry += pair[0] + " = " + pair[1] + " and "
+            qry = qry[:len(qry)-4]
+
+        return self.execute_query(qry) 
+
+    def query_range(self, columns, table, range_conditions={}, conditions={}):
+        '''
+        columns - a list of columns to be retrieved
+        table - from which ot be retrieved
+        range_conditions - a dictionary of ranges (should be in form { col_name : '>=num;<=num', ... }
+        conditions - other conditions (equality conditions)
+        '''
+        pass
+
+    def query_aggregate(self, column, table, fn, conditions={}):
+        '''
+        fn - the aggregate functino to perform
+        returns the result of the given aggregate fn on the database
+        '''
         
