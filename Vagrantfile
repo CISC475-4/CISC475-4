@@ -48,7 +48,7 @@ Vagrant.configure(2) do |config|
     vb.gui = true
  
     # Customize the amount of memory on the VM:
-    #   vb.memory = "1024"
+    vb.memory = "2096" # 2GB
   end
   
   #
@@ -69,5 +69,9 @@ Vagrant.configure(2) do |config|
   #   sudo apt-get update
   #   sudo apt-get install -y apache2
   # SHELL
-  config.vm.provision :shell, path: "./config/vagrant_bootstrap.sh"
+  config.vm.provision :shell, run: "always", 
+      path: "./config/data_viz_startup.sh" # "./config/vagrant_bootstrap.sh"
+  config.vm.provision "shell", inline: <<-SHELL
+      startxfce &
+  SHELL
 end
