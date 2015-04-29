@@ -71,7 +71,4 @@ Vagrant.configure(2) do |config|
   # SHELL
   config.vm.provision :shell, run: "always", 
       path: "./config/data_viz_startup.sh" # "./config/vagrant_bootstrap.sh"
-  config.vm.provision "shell", inline: <<-SHELL
-      startxfce &
-  SHELL
 end
