@@ -4,8 +4,8 @@
 function status_msg () 
 {
     color="\e[0;35m" # purple
-    end="\e[0m"      # regular
-    echo -e "$color$1$cend"
+    cend="\e[0m"      # regular
+    echo -e "$color$*$cend"
 }
 
 # If this is the first time this machine is being brought up, do the
@@ -74,11 +74,7 @@ if [[ ! -f /var/log/vagrant_installed ]]; then
     status_msg "::: Need to reboot for software installation to complete!"
     sudo reboot
 else
-    status_msg "Installation has already been performed. Setting up GUI..."
+    status_msg "Installation has already been performed."
+
+    # If we need to do other things upon login, we can do them here or below the fi.
 fi
-
-status_msg "::: Starting xfce4 GUI"
-cd ~
-/usr/bin/startxfce4 &
-sleep 6
-
