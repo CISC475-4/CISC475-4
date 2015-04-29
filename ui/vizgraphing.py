@@ -22,15 +22,24 @@ class VizGraphing():
         self.init_graphs() 
 
     def init_graphs(self):
-        #testdata = self.window.controller.retrieve_graph_data()
-        #print testdata
+        testdata = self.window.controller.retrieve_graph_data('b1', 'b2', 'b3')
+        b1 = []
+        for i in testdata:
+            b1.append(i[0])
+        b2 = []
+        for i in testdata:
+            b2.append(i[1])
+        b3 = []
+        for i in testdata:
+            b3.append(i[2])
+
         # set-up matplotlib canvas
         l = QtGui.QVBoxLayout(self.window.main_widget)
-        sc = ColorBarCanvas(self.window.main_widget, width=5, height=4, dpi=100)
+        sc = ColorBarCanvas(b1, self.window.main_widget, width=5, height=4, dpi=100)
         l.addWidget(sc)
-        sc2 = ColorBarCanvas(self.window.main_widget, width=5, height=4, dpi=100)
+        sc2 = ColorBarCanvas(b2, self.window.main_widget, width=5, height=4, dpi=100)
         l.addWidget(sc2)
-        sc3 = ColorBarCanvas(self.window.main_widget, width=5, height=4, dpi=100)
+        sc3 = ColorBarCanvas(b3, self.window.main_widget, width=5, height=4, dpi=100)
         l.addWidget(sc3)
 
         seek_slider = QtGui.QSlider(QtCore.Qt.Horizontal, self.window.main_widget)
@@ -78,7 +87,8 @@ class MyMplCanvas(FigureCanvas):
 # copied from http://matplotlib.org/examples/user_interfaces/embedding_in_qt4.html
 class ColorBarCanvas(MyMplCanvas):
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, dataset, *args, **kwargs):
+        self.dataset = dataset
         MyMplCanvas.__init__(self, *args, **kwargs)
 
     def set_seek_slider(self, seek_slider):
@@ -93,16 +103,20 @@ class ColorBarCanvas(MyMplCanvas):
     def compute_initial_figure(self):
         # The four colors in order from left to right
         # cmap will hold the data
-        self.test_data = [int(10*random.random()) for i in xrange(10000)]
+        #self.test_data = [int(10*random.random()) for i in xrange(10000)]
         #self.test_data = range(0, 1000)
-        self.data_range = max(self.test_data) - min(self.test_data) + 1 # possible efficiency problem
+        self.test_data = self.dataset
+        data_min = min(self.test_data)
+        data_max = max(self.test_data)
+        self.data_range = data_max - data_min + 1 # possible efficiency problem
         self.colors = []
         for i in range(0, self.data_range):
-            self.colors.append([0., .4, i / float(self.data_range)])
+            #self.colors.append([0., .4, i / float(self.data_range)])
+            self.colors.append([i / float(self.data_range), 1 - (i / float(self.data_range)), .4])
 
         self.color_list = []
         for i in self.test_data: 
-            self.color_list.append(self.colors[i])
+            self.color_list.append(self.colors[i - data_min])
 
         self.cmap = mpl.colors.ListedColormap(self.color_list)
         self.cmap.set_over((1., 0., 0.))
@@ -121,7 +135,7 @@ class ColorBarCanvas(MyMplCanvas):
 
         if window_size == 0:
             window_size = 10
-        if window_size > len(self.color_list):
+        if window_size > len(self.color_list) or self.zoom_slider.value() == 99:
             window_size = len(self.color_list)
 
         window_start = int((len(self.color_list) - window_size) * self.seek_slider.value() / 99.0)
