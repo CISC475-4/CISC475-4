@@ -41,17 +41,12 @@ class Controller:
             # TODO: Get a modal to pop up in the UI displaying the error message
             logging.error(e)
 
-
-    # TODO: Do we need to specify whether or not we want time data?
-    # TODO: Delete later
-    def retrieve_graph_data(self, x_label, y_label, z_label):
+    def import_folder_to_database(self, dirpath):
         '''
-        retrieve_graph_data
-        calls the database functions query the data
+        Given a path to a directly, imports all CSV and XLS[X] files with correct pathnames format to db
         '''
-        #TODO: Still determining how the structure of this and related
-        #return self.db.execute_query(x_label, y_label, z_label)
-        return self.db.query_multiple([x_label, y_label, z_label], "Chunk") 
+        #TODO: this function
+        pass
 
     def get_table_names(self):
         '''
