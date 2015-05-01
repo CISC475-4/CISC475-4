@@ -225,7 +225,23 @@ class DatabaseManager(object):
 
     def query_aggregate(self, column, table, fn, conditions={}):
         '''
-        fn - the aggregate functino to perform
+        fn - the code for the aggregate functino to perform
+        if an unhandled code is given, it simply performs a select statement
         returns the result of the given aggregate fn on the database
+
+        aggregate functions here are NOT exhaustive
+        add codes for additional necessary aggregate functions later
         '''
-        
+        aggr_command = ""
+
+        if fn == 0: #MAX
+            aggr_command = "MAX" 
+        elif fn == 1: #MIN
+            aggr_command = "MIN"
+        elif fn == 2: #COUNT
+            aggr_command = "COUNT"
+        elif fn == 3: #AVG
+            aggr_command = "AVG"
+
+        qry = "SELECT " + aggr_command + "(" + column + ") " + "FROM " + table
+        return self.execute_query(qry)

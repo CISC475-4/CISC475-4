@@ -46,6 +46,8 @@ def main():
     #session_ids = main_controller.get_all_sessions_for_child("20274")
     #tables_names = main_controller.get_table_names()
     #column_names = main_controller.get_columns_from_table("Session_Meta")
+    min_behaviors = main_controller.get_min_behavior(['b3', 'b2'], '20274')
+    print (min_behaviors)
 
     #sys.exit(application.exec_())
 

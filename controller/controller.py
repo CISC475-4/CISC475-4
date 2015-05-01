@@ -85,8 +85,16 @@ class Controller:
         columns: a list of column ids to get data from
         child_id: the child_id of which to retrieve data from
         '''
-        condition = {"child_id" : child_id }
+        condition = {"child_id" : child_id}
         return self.db.query_multiple(self, columns, "Chunk", condition)
+
+    def get_data_by_child_for_sessions(self, columns, child_id, session_ids):
+        '''
+        columns: a list of column ids to get data from
+        child_id: the child_id of which to retrieve data from
+        session_ids: a list of session ids to retrieve data from
+        '''
+        pass
 
     def get_behaviors_for_child(self, behaviors, child_id, session_id=0, time_start=0, time_end=0):
         '''
@@ -104,7 +112,19 @@ class Controller:
         optional parameters may be used for more specific queries
         returns a list of max values cooresponding to the list of behaviors
         '''
-        pass
+        aggr_code = 0 #cooresponding to the code for max iaggregate command
+        max_behaviors = []
+        condition = {"child_id", child_id}
+        if type(behaviors) == type(list()):
+            for behavior in behaviors: 
+                max_val = self.db.query_aggregate(behavior, "Chunk", aggr_code, condition) 
+                max_behaviors += max_val
+        else:
+            #not handling behaviors that are not a list
+           logging.error("Controller: Incorrect argument to query database")
+
+        return max_behaviors
+        
 
     def get_min_behavior(self, behaviors, child_id):
         '''
@@ -112,7 +132,18 @@ class Controller:
         optional parameters may be used for more specific queries
         returns a list of max values cooresponding to the list of behaviors
         '''
-        pass
+        aggr_code = 1 #cooresponding to the code for max aggregate command
+        min_behaviors = []
+        condition = {"child_id", child_id}
+        if type(behaviors) == type(list()):
+            for behavior in behaviors: 
+                min_val = self.db.query_aggregate(behavior, "Chunk", aggr_code, condition) 
+                min_behaviors += min_val
+        else:
+            #not handling behaviors that are not a list
+           logging.error("Controller: Incorrect argument to query database")
+
+        return min_behaviors
         
 
     # TABLE SPECIFIC QUERIES
