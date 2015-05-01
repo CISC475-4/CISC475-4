@@ -153,6 +153,18 @@ class DatabaseManager(object):
         cursor.execute(query)  
         return cursor.fetchall() #a list of data rows
 
+    def create_condition_query(self, conditions):
+        '''
+        This functions serves as logic to create the sub-query with conditional syntax
+        '''
+        #TODO: handle other conditions that are not plainly equivalent cases
+        qry = " WHERE "
+        for pair in conditions.iteritems():
+            # TODO: distinguish between numeric and non-numeric keys
+            qry += pair[0] + " = " + str(pair[1]) + " and " # pair = (key, value)
+        qry = qry[:-4] # remove floating and 
+        return qry 
+        
 
 
     ## TODO: HERE BE ALL THE DB STUFF FOR FINAL IMPLEMENTATION
@@ -166,7 +178,6 @@ class DatabaseManager(object):
         else:
             # results as (col_num, col_name, type, ?, ?, ?)
             qry = "PRAGMA table_info(" + table + ")"
-        print qry
         return self.execute_query(qry)
 
     def retrieve_distinct_by_name(self, column, table):
@@ -186,12 +197,7 @@ class DatabaseManager(object):
         '''     
         qry = "SELECT " + column + " FROM " + table
         if conditions != {}:
-            #TODO: handle other conditions that are not plainly equivalent cases
-            qry += " WHERE "
-            for pair in conditions.iteritems():
-                # TODO: distinguish between numeric and non-numeric keys
-               qry += pair[0] + " = " + pair[1] + " and " # pair = (key,, value)
-            qry = qry[:len(qry)-4] # remove floating and 
+            qry += self.create_condition_query(conditions)
         return self.execute_query(qry)
 
     def query_multiple(self, columns, table, conditions={}):
@@ -207,10 +213,7 @@ class DatabaseManager(object):
         qry += " FROM " + table
 
         if conditions != {}:
-            qry += " WHERE " 
-            for pair in conditions.iteritems():
-                qry += pair[0] + " = " + pair[1] + " and "
-            qry = qry[:len(qry)-4]
+            qry += self.create_condition_query(conditions)
 
         return self.execute_query(qry) 
 
@@ -243,5 +246,9 @@ class DatabaseManager(object):
         elif fn == 3: #AVG
             aggr_command = "AVG"
 
-        qry = "SELECT " + aggr_command + "(" + column + ") " + "FROM " + table
+        cond_qry = "" #conditions
+        if conditions != {}:
+            cond_qry = self.create_condition_query(conditions)
+
+        qry = "SELECT " + aggr_command + "(" + column + ") " + "FROM " + table + cond_qry
         return self.execute_query(qry)

@@ -96,7 +96,7 @@ class Controller:
         '''
         pass
 
-    def get_behaviors_for_child(self, behaviors, child_id, session_id=0, time_start=0, time_end=0):
+    def get_behaviors_for_child(self, behaviors, child_id, session_id=-1, time_start=0, time_end=0):
         '''
         behaviors - a list of behaviors (column names)
         child_id - the child_id 
@@ -106,7 +106,7 @@ class Controller:
         '''
         pass
 
-    def get_max_behavior(self, behaviors, child_id, session_id=0, start_time=0, end_time=0):
+    def get_max_behavior(self, behaviors, child_id, session_id=-1, start_time=0, end_time=0):
         '''
         behaviors - a list of behaviors to get the max value of given the child_
         optional parameters may be used for more specific queries
@@ -114,10 +114,15 @@ class Controller:
         '''
         aggr_code = 0 #cooresponding to the code for max iaggregate command
         max_behaviors = []
-        condition = {"child_id", child_id}
+        conditions = {"child_id": child_id}
+        #non-default session_id
+        if session_id > -1:
+            conditions['session_id'] = session_id
+
+        #requesting the query from database object
         if type(behaviors) == type(list()):
             for behavior in behaviors: 
-                max_val = self.db.query_aggregate(behavior, "Chunk", aggr_code, condition) 
+                max_val = self.db.query_aggregate(behavior, "Chunk", aggr_code, conditions) 
                 max_behaviors += max_val
         else:
             #not handling behaviors that are not a list
@@ -151,18 +156,18 @@ class Controller:
         '''
         calls db to query for specific columns in the GroupData table
         '''
-        pass
+        return self.db.query_multiple(columns, 'GroupData')
 
     def get_chunk_data(self, columns):
         '''
         calls db to query for specific columns in the Chunk table
         '''
-        pass
+        return self.db.query_multiple(columns, 'Chunk')
 
     def get_meta_data(self, columns):
         '''
         calls db to query for specific columns in the Session_Meta table
         '''
-        pass
+        return self.db.query_multiple(columns, 'Session_Meta')
 
 
