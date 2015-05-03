@@ -165,8 +165,6 @@ class DatabaseManager(object):
         qry = qry.rstrip(' AND ')
         return qry 
         
-
-    ## TODO: HERE BE ALL THE DB STUFF FOR FINAL IMPLEMENTATION
     def retrieve_db_info(self, table=""):
         '''
         performs queries for such information as table names and full table info

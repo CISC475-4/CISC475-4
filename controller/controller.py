@@ -48,6 +48,7 @@ class Controller:
         #TODO: this function
         pass
 
+    ## GENERAL DATABASE RELEVANT DATA
     def get_table_names(self):
         '''
         returns a list of all table names
@@ -75,37 +76,77 @@ class Controller:
         condition = {"child_id" : child_id }
         return self.db.query_single("session_id", "Session", condition)
 
-    def get_data_by_child_id(self, columns, child_id):
+    ## DATA SPECIFIC TO GROUPDATA TABLE
+    def get_all_combo_indexes(self, child_id, session_id)
+        '''
+        returns a list of all unique combo_index values from the GroupData table
+        child_id and session_id must be provided (this is a unique triplet)
+        '''
+        #TODO
+        pass
+
+    def get_group_data_by_combo_index(self, columns, combo_index, child_id, session_id)
+        '''
+        columns - a list of columns to retrieve from GroupData tables 
+        combo_index - the specific combo to retrieve the data from
+        child_id - the child_id from which to retrieve the data
+        session_id - the session from which to retrieve the data
+        '''
+        #TODO
+        pass
+
+    def get_num_chunks(self, combo_index, child_id, session_id):
+        '''
+        combo_index - the specific combo to retrieve the data from
+        child_id - the child_id from which to retrieve the data
+        session_id - the session from which to retrieve the data
+        returns the number of chunks from a unique combo_index, child_id, and session_id triple
+        '''
+        #TODO
+        pass
+
+    def get_chunk_max_duration(self, combo_index, child_id, session_id):
+        '''
+        combo_index - the specific combo to retrieve the data from
+        child_id - the child_id from which to retrieve the data
+        session_id - the session from which to retrieve the data
+        returns the max chunk duration (chunk_avg_dur) from a unique combo_index, child_id, session_id triple
+        '''
+        #TODO
+        pass
+        
+    def get_chunk_avg_duration(self, combo_index, child_id, session_id):
+        '''
+        combo_index - the specific combo to retrieve the data from
+        child_id - the child_id from which to retrieve the data
+        session_id - the session from which to retrieve the data
+        returns the avg chunk duration (chunk_avg_dur) from a unique combo_index, child_id, session_id triple
+        '''
+        #TODO
+        pass
+         
+
+    ## DATA SPECIFIC TO CHUNK TABLE
+    def get_chunk_data_by_child_id(self, columns, child_id, session_id=None):
         '''
         columns: a list of column ids to get data from
         child_id: the child_id of which to retrieve data from
+        session_id: (optional)
         '''
+        #TODO: include session_id
         condition = {"child_id" : child_id}
         return self.db.query_multiple(self, columns, "Chunk", condition)
 
-    def get_data_by_child_for_sessions(self, columns, child_id, session_ids):
-        '''
-        columns: a list of column ids to get data from
-        child_id: the child_id of which to retrieve data from
-        session_ids: a list of session ids to retrieve data from
-
-        returns a dictionary of session_ids as key and a list of datapoints for each session
-        '''
-        #TODO:
-        #for ID in session_ids:
-        #    pass
-        pass
-        
-        
-
-    def get_behaviors_for_child(self, behaviors, child_id, session_id=None, time_start=None, time_end=None):
+    def get_behaviors_for_child(self, behaviors, child_id, session_id=None, timestamps=False, time_start=None, time_end=None):
         '''
         behaviors - a list of behaviors (column names)
         child_id - the child_id 
         session_id - (optional) default retrieves all session
+        timestamps - (optional) set to True if you want to retrieve timestamps with each data instance
         time_start - (optional) default retrieves all times, must include a time_end value 
         time_end - (optional) default retrieves all times, must include a time_start value
         '''
+        #TODO: timestamps
         # build time constraints
         time_conditions = {}
         if time_start is not None:
@@ -119,13 +160,14 @@ class Controller:
             equality_conditions['session_id'] = session_id
         return self.db.query_range(behaviors, 'Chunk', range_conditions, equality_conditions)
 
-    def get_max_behavior(self, behaviors, child_id, session_id=-1, start_time=0, end_time=0):
+    def get_max_behavior(self, behaviors, child_id, session_id=-1, timestamps=False, start_time=0, end_time=0):
         '''
         behaviors - a list of behaviors to get the max value of given the child_
+        timestamps - (optional) set to True if you want to retrieve timestamps with each data instance
         optional parameters may be used for more specific queries
         returns a list of max values cooresponding to the list of behaviors
         '''
-        #TODO: get min over a range
+        #TODO: implement range querying, change defaults, session id
         aggr_code = 0 #cooresponding to the code for max iaggregate command
         max_behaviors = []
         conditions = {"child_id": child_id}
@@ -145,13 +187,14 @@ class Controller:
         return max_behaviors
         
 
-    def get_min_behavior(self, behaviors, child_id):
+    def get_min_behavior(self, behaviors, child_id, session_id=None, timestamps=False, start_time=0, end_time=0):
         '''
         behaviors - a list of behaviors to get the max value of given the child_
+        timestamps - (optional) set to True if you want to retrieve timestamps with each data instance
         optional parameters may be used for more specific queries
         returns a list of max values cooresponding to the list of behaviors
         '''
-        #TODO: get min over a range
+        #TODO: implement session id, range query, and timestamp
         aggr_code = 1 #cooresponding to the code for max aggregate command
         min_behaviors = []
         condition = {"child_id", child_id}
@@ -164,6 +207,16 @@ class Controller:
            logging.error("Controller: Incorrect argument to query database")
 
         return min_behaviors
+
+    def get_avg_behavior(self, behaviors, child_id, session_id=None, timestamps=False, start_time=0, end_time=0):
+        '''
+        behaviors - a list of behaviors to get the max value of given the child_
+        timestamps - (optional) set to True if you want to retrieve timestamps with each data instance
+        optional parameters may be used for more specific queries
+        returns a list of avg values cooresponding to the list of behaviors
+        '''
+        #TODO: this whole function
+        pass
         
 
     # TABLE SPECIFIC QUERIES
