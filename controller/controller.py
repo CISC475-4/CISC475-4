@@ -91,7 +91,7 @@ class Controller:
         '''
         pass
 
-    def get_behaviors_for_child(self, behaviors, child_id, session_id=-1, time_start=0, time_end=0):
+    def get_behaviors_for_child(self, behaviors, child_id, session_id=None, time_start=None, time_end=None):
         '''
         behaviors - a list of behaviors (column names)
         child_id - the child_id 
@@ -99,7 +99,18 @@ class Controller:
         time_start - (optional) default retrieves all times, must include a time_end value 
         time_end - (optional) default retrieves all times, must include a time_start value
         '''
-        pass
+        # build time constraints
+        time_conditions = {}
+        if time_start is not None:
+            time_conditions['min'] = time_start
+        if time_end is not None:
+            time_conditions['max'] = time_end
+        range_conditions = {'time': time_conditions}
+        # build equality conditions
+        equality_conditions = {'child_id': child_id}
+        if session_id is not None:
+            equality_conditions['session_id'] = session_id
+        return self.db.query_range(behaviors, 'Chunk', range_conditions, equality_conditions)
 
     def get_max_behavior(self, behaviors, child_id, session_id=-1, start_time=0, end_time=0):
         '''
@@ -164,5 +175,3 @@ class Controller:
         calls db to query for specific columns in the Session_Meta table
         '''
         return self.db.query_multiple(columns, 'Session_Meta')
-
-

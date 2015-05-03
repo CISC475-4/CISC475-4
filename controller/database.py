@@ -161,8 +161,8 @@ class DatabaseManager(object):
         qry = " WHERE "
         for pair in conditions.iteritems():
             # TODO: distinguish between numeric and non-numeric keys
-            qry += pair[0] + " = " + str(pair[1]) + " and " # pair = (key, value)
-        qry = qry[:-4] # remove floating and 
+            qry += pair[0] + " = " + str(pair[1]) + " AND " # pair = (key, value)
+        qry = qry.rstrip(' AND ')
         return qry 
         
 
@@ -209,7 +209,7 @@ class DatabaseManager(object):
         qry = "SELECT " 
         for col in columns:
             qry += col + ", "
-        qry = qry[:len(qry)-2]
+        qry = qry.rstrip(', ')
         qry += " FROM " + table
 
         if conditions != {}:
@@ -217,14 +217,34 @@ class DatabaseManager(object):
 
         return self.execute_query(qry) 
 
-    def query_range(self, columns, table, range_conditions={}, conditions={}):
+    def query_range(self, columns, table, range_conditions, conditions={}):
         '''
         columns - a list of columns to be retrieved
         table - from which ot be retrieved
-        range_conditions - a dictionary of ranges (should be in form { col_name : '>=num;<=num', ... }
+        range_conditions - a two-leveled dictionary { col_name: {'min': #, 'max': #}, ...}
         conditions - other conditions (equality conditions)
         '''
-        pass
+        qry = 'SELECT '
+        for cname in columns:
+            qry += cname + ', '
+        qry = qry.rstrip(', ')
+        qry += ' FROM {t} '.format(t=table)
+        if conditions != {}:
+            qry += self.create_condition_query(conditions)
+            qry += ' AND '
+        else:
+            qry += 'WHERE '
+        for key, val in range_conditions.iteritems():
+            # key here is the columnname to be restricted, val is the dictionary of conditions
+            if 'min' in val:
+                qry += '{k} >= {m} '.format(k=key, m=val['min'])
+                if 'max' in val:
+                    qry += 'AND {k} <= {m} '.format(k=key, m=val['max'])
+            elif 'max' in val:
+                qry += '{k} <= {m} '.format(k=key, m=val['max'])
+            qry += " AND " 
+        qry = qry.rstrip(' AND ')
+        return self.execute_query(qry)
 
     def query_aggregate(self, column, table, fn, conditions={}):
         '''
