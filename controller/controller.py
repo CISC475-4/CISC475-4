@@ -88,8 +88,15 @@ class Controller:
         columns: a list of column ids to get data from
         child_id: the child_id of which to retrieve data from
         session_ids: a list of session ids to retrieve data from
+
+        returns a dictionary of session_ids as key and a list of datapoints for each session
         '''
+        #TODO:
+        #for ID in session_ids:
+        #    pass
         pass
+        
+        
 
     def get_behaviors_for_child(self, behaviors, child_id, session_id=-1, time_start=0, time_end=0):
         '''
@@ -99,6 +106,7 @@ class Controller:
         time_start - (optional) default retrieves all times, must include a time_end value 
         time_end - (optional) default retrieves all times, must include a time_start value
         '''
+        #TODO: 
         pass
 
     def get_max_behavior(self, behaviors, child_id, session_id=-1, start_time=0, end_time=0):
@@ -107,6 +115,7 @@ class Controller:
         optional parameters may be used for more specific queries
         returns a list of max values cooresponding to the list of behaviors
         '''
+        #TODO: get min over a range
         aggr_code = 0 #cooresponding to the code for max iaggregate command
         max_behaviors = []
         conditions = {"child_id": child_id}
@@ -132,6 +141,7 @@ class Controller:
         optional parameters may be used for more specific queries
         returns a list of max values cooresponding to the list of behaviors
         '''
+        #TODO: get min over a range
         aggr_code = 1 #cooresponding to the code for max aggregate command
         min_behaviors = []
         condition = {"child_id", child_id}

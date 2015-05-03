@@ -166,7 +166,6 @@ class DatabaseManager(object):
         return qry 
         
 
-
     ## TODO: HERE BE ALL THE DB STUFF FOR FINAL IMPLEMENTATION
     def retrieve_db_info(self, table=""):
         '''
@@ -223,7 +222,7 @@ class DatabaseManager(object):
         table - from which ot be retrieved
         range_conditions - a dictionary of ranges (should be in form { col_name : '>=num;<=num', ... }
         conditions - other conditions (equality conditions)
-        '''
+        '''  
         pass
 
     def query_aggregate(self, column, table, fn, conditions={}):
