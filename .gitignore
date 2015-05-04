@@ -62,10 +62,10 @@ target/
 **/*.csv
 
 # Vim swap files. Useful if you keep files open in vim and use `git commit -a`
-.swp
+**/*.swp
 
 # OS X-specific directories for storing OS X-specific (meta)data
-.DS_Store
+**/*.DS_Store
 
 # Databases
 data.sqlite3
