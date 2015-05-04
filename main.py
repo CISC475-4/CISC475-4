@@ -46,6 +46,8 @@ def main():
     #session_ids = main_controller.get_all_sessions_for_child("20274")
     #tables_names = main_controller.get_table_names()
     #column_names = main_controller.get_columns_from_table("Session_Meta")
+    #max_behaviors = main_controller.get_max_behavior(['b3', 'b2'], '20274', 1)
+    #range_behaviors = main_controller.get_behaviors_for_child(['b1','b2','b3'], '20274', 1, 10, 50)
 
     #sys.exit(application.exec_())
 
