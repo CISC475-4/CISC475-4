@@ -32,4 +32,35 @@ class TestDatabase(unittest.TestCase):
     def test_disconnect(self):
         db = database.DatabaseManager()
 	db.connect()
+        db.disconnect()
+        self.assertIsNone(db.cursor)
+    
+    def test_setup(self):
+	"""I'm not sure if I understand what setup() is supposed to do"""
+        db = database.DatabaseManager()
+	db.connect()
+	db.setup() # No input sql_filename
+	
+	# How to test logging messages?
+	# There should be new data in the database if the setup was successful
+	# Maybe table creations don't count as db changes?
+	self.assertGreater(db.sql_conn.total_changes, 0)
 
+	# No error messages for files that don't exist?
+	db2 = database.DatabaseManager()
+	db2.connect()
+	self.assertRaises(IOError, db2.setup, 'fileThatDoesntExist')
+
+    def test_check_db_setup(self):
+        db_setup = database.DatabaseManager()
+	db_setup.connect()
+	db_setup.setup()
+	db_not_setup = database.DatabaseManager()
+
+	self.assertTrue(db_setup.check_db_setup())
+	self.assertFalse(db_not_setup.check_db_setup())
+
+    def test_import_file_to_database(self):
+        db = database.DatabaseManager()
+	self.assertRaises(IOError, db.import_file_to_database, 'fakeFileName')
+        # @TODO: Finish this function
