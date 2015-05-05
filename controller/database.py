@@ -211,7 +211,7 @@ class DatabaseManager(object):
 
         if conditions != {}:
             qry += self.create_condition_query(conditions)
-
+        print qry
         return self.execute_query(qry) 
 
     def query_range(self, columns, table, range_conditions, conditions={}):

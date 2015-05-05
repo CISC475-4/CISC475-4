@@ -97,8 +97,14 @@ class Controller:
         child_id - the child_id from which to retrieve the data
         session_id - the session from which to retrieve the data
         '''
-        #TODO
-        pass
+        table = 'GroupData'
+        conditions = {
+            'child_id' : child_id,
+            'session_id' : session_id,
+            'combo_index' : combo_index
+        }
+        print str(columns) + '\n' + str(table) + '\n' + str(conditions)
+        return self.db.query_multiple(columns, table, conditions)
 
     def get_num_chunks(self, combo_index, child_id, session_id):
         '''
@@ -107,18 +113,30 @@ class Controller:
         session_id - the session from which to retrieve the data
         returns the number of chunks from a unique combo_index, child_id, and session_id triple
         '''
-        #TODO
-        pass
+        column = 'num_chunks'
+        table = 'GroupData'
+        conditions = {
+            'child_id' : child_id,
+            'session_id' : session_id,
+            'combo_index' : combo_index
+        }
+        return self.db.query_single(column, table, conditions)
 
     def get_chunk_max_duration(self, combo_index, child_id, session_id):
         '''
         combo_index - the specific combo to retrieve the data from
         child_id - the child_id from which to retrieve the data
         session_id - the session from which to retrieve the data
-        returns the max chunk duration (chunk_avg_dur) from a unique combo_index, child_id, session_id triple
+        returns the max chunk duration (chunk_max_dur) from a unique combo_index, child_id, session_id triple
         '''
-        #TODO
-        pass
+        column = 'chunk_avg_dur' 
+        table = 'GroupData'
+        conditions = {
+            'child_id' : child_id,
+            'session_id' : session_id,
+            'combo_index' : combo_index
+        }
+        return self.db.query_single(column, table, conditions)
         
     def get_chunk_avg_duration(self, combo_index, child_id, session_id):
         '''
@@ -127,8 +145,14 @@ class Controller:
         session_id - the session from which to retrieve the data
         returns the avg chunk duration (chunk_avg_dur) from a unique combo_index, child_id, session_id triple
         '''
-        #TODO
-        pass
+        column = 'chunk_avg_dur'
+        table = 'GroupData'
+        conditions = {
+            'child_id' : child_id,
+            'session_id' : session_id,
+            'combo_index' : combo_index
+        }
+        return self.db.query_single(column, table, conditions)
          
 
     ## DATA SPECIFIC TO CHUNK TABLE
