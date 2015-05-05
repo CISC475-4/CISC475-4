@@ -103,7 +103,6 @@ class Controller:
             'session_id' : session_id,
             'combo_index' : combo_index
         }
-        print str(columns) + '\n' + str(table) + '\n' + str(conditions)
         return self.db.query_multiple(columns, table, conditions)
 
     def get_num_chunks(self, combo_index, child_id, session_id):
