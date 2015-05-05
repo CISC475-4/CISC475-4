@@ -155,17 +155,7 @@ class Controller:
          
 
     ## DATA SPECIFIC TO CHUNK TABLE
-    def get_chunk_data_by_child_id(self, columns, child_id, session_id=None):
-        '''
-        columns: a list of column ids to get data from
-        child_id: the child_id of which to retrieve data from
-        session_id: (optional)
-        '''
-        #TODO: include session_id
-        condition = {"child_id" : child_id}
-        return self.db.query_multiple(self, columns, "Chunk", condition)
-
-    def get_behaviors_for_child(self, behaviors, child_id, session_id=None, timestamps=False, time_start=None, time_end=None):
+    def get_behaviors_for_child(self, behaviors, child_id, session_id=None, time_start=None, time_end=None, timestamps=None):
         '''
         behaviors - a list of behaviors (column names)
         child_id - the child_id 
@@ -174,39 +164,52 @@ class Controller:
         time_start - (optional) default retrieves all times, must include a time_end value 
         time_end - (optional) default retrieves all times, must include a time_start value
         '''
-        #TODO: timestamps
         # build time constraints
         time_conditions = {}
         if time_start is not None:
             time_conditions['min'] = time_start
         if time_end is not None:
             time_conditions['max'] = time_end
-        range_conditions = {'time': time_conditions}
+        range_conditions = {}
+        if time_conditions != {}:
+            range_conditions = {'time': time_conditions}
         # build equality conditions
         equality_conditions = {'child_id': child_id}
         if session_id is not None:
             equality_conditions['session_id'] = session_id
+        # retrieve time column if requested
+        if timestamps:
+            behaviors.append('time')
         return self.db.query_range(behaviors, 'Chunk', range_conditions, equality_conditions)
 
-    def get_max_behavior(self, behaviors, child_id, session_id=-1, timestamps=False, start_time=0, end_time=0):
+    def get_max_behavior(self, behaviors, child_id, session_id=None, time_start=None, time_end=None):
         '''
         behaviors - a list of behaviors to get the max value of given the child_
-        timestamps - (optional) set to True if you want to retrieve timestamps with each data instance
         optional parameters may be used for more specific queries
         returns a list of max values cooresponding to the list of behaviors
         '''
-        #TODO: implement range querying, change defaults, session id
         aggr_code = 0 #cooresponding to the code for max iaggregate command
         max_behaviors = []
-        conditions = {"child_id": child_id}
+        equality_conditions = {"child_id": child_id}
+
+        #build time constraints
+        time_conditions = {}
+        if time_start is not None:
+            time_conditions['min'] = time_start
+        if time_end is not None:
+            time_conditions['max'] = time_end
+        range_conditions = {}
+        if time_conditions != {}:
+            range_conditions = {'time': time_conditions}
+
         #non-default session_id
-        if session_id > -1:
-            conditions['session_id'] = session_id
+        if session_id != None:
+            equality_conditions['session_id'] = session_id
 
         #requesting the query from database object
         if type(behaviors) == type(list()):
             for behavior in behaviors: 
-                max_val = self.db.query_aggregate(behavior, "Chunk", aggr_code, conditions) 
+                max_val = self.db.query_aggregate(behavior, "Chunk", aggr_code, range_conditions, equality_conditions) 
                 max_behaviors += max_val
         else:
             #not handling behaviors that are not a list
@@ -215,20 +218,33 @@ class Controller:
         return max_behaviors
         
 
-    def get_min_behavior(self, behaviors, child_id, session_id=None, timestamps=False, start_time=0, end_time=0):
+    def get_min_behavior(self, behaviors, child_id, session_id=None, time_start=None, time_end=None):
         '''
         behaviors - a list of behaviors to get the max value of given the child_
-        timestamps - (optional) set to True if you want to retrieve timestamps with each data instance
         optional parameters may be used for more specific queries
         returns a list of max values cooresponding to the list of behaviors
         '''
-        #TODO: implement session id, range query, and timestamp
         aggr_code = 1 #cooresponding to the code for max aggregate command
         min_behaviors = []
         condition = {"child_id", child_id}
+
+        #build time constraints
+        time_conditions = {}
+        if time_start is not None:
+            time_conditions['min'] = time_start
+        if time_end is not None:
+            time_conditions['max'] = time_end
+        range_conditions = {}
+        if time_conditions != {}:
+            range_conditions = {'time': time_conditions}
+        
+        #non-default session_id
+        if session_id != None:
+           condition['session_id'] = session_id         
+
         if type(behaviors) == type(list()):
             for behavior in behaviors: 
-                min_val = self.db.query_aggregate(behavior, "Chunk", aggr_code, condition) 
+                min_val = self.db.query_aggregate(behavior, "Chunk", aggr_code, range_conditions, equality_conditions) 
                 min_behaviors += min_val
         else:
             #not handling behaviors that are not a list
@@ -236,15 +252,36 @@ class Controller:
 
         return min_behaviors
 
-    def get_avg_behavior(self, behaviors, child_id, session_id=None, timestamps=False, start_time=0, end_time=0):
+    def get_avg_behavior(self, behaviors, child_id, session_id=None, time_start=None, time_end=None):
         '''
         behaviors - a list of behaviors to get the max value of given the child_
         timestamps - (optional) set to True if you want to retrieve timestamps with each data instance
         optional parameters may be used for more specific queries
         returns a list of avg values cooresponding to the list of behaviors
         '''
-        #TODO: this whole function
-        pass
+        aggr_code = 3 #cooresponding to the code for max aggregate command
+        avg_behaviors = []
+        equality_conditions = {"child_id", child_id}
+
+        #build time constraints
+        time_conditions = {}
+        if time_start is not None:
+            time_conditions['min'] = time_start
+        if time_end is not None:
+            time_conditions['max'] = time_end
+        range_conditions = {}
+        if time_conditions != {}:
+            range_conditions = {'time': time_conditions}
+        
+        #non-default session_id
+        if session_id != None:
+           equality_conditions['session_id'] = session_id         
+
+        if type(behaviors) == type(list()):
+            for behavior in behaviors: 
+                avg_val = self.db.query_aggregate(behavior, "Chunk", aggr_code, range_conditions, equality_conditions)
+                avg_behaviors += avg_val
+        
         
 
     # TABLE SPECIFIC QUERIES
