@@ -77,15 +77,20 @@ class Controller:
         return self.db.query_single("session_id", "Session", condition)
 
     ## DATA SPECIFIC TO GROUPDATA TABLE
-    def get_all_combo_indexes(self, child_id, session_id)
+    def get_all_combo_indexes(self, child_id, session_id):
         '''
         returns a list of all unique combo_index values from the GroupData table
         child_id and session_id must be provided (this is a unique triplet)
         '''
-        #TODO
-        pass
+        column = 'combo_index'
+        table = 'GroupData'
+        conditions = {
+            'child_id' : child_id,
+            'session_id' : session_id
+        }
+        return self.db.query_single(column, table, conditions)
 
-    def get_group_data_by_combo_index(self, columns, combo_index, child_id, session_id)
+    def get_group_data_by_combo_index(self, columns, combo_index, child_id, session_id):
         '''
         columns - a list of columns to retrieve from GroupData tables 
         combo_index - the specific combo to retrieve the data from
