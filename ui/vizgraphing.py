@@ -33,33 +33,34 @@ class VizGraphing():
         for i in testdata:
             b3.append(i[2])
 
-        # set-up matplotlib canvas
-        l = QtGui.QVBoxLayout(self.window.main_widget)
-        sc = ColorBarCanvas(b1, self.window.main_widget, width=5, height=4, dpi=100)
-        l.addWidget(sc)
-        sc2 = ColorBarCanvas(b2, self.window.main_widget, width=5, height=4, dpi=100)
-        l.addWidget(sc2)
-        sc3 = ColorBarCanvas(b3, self.window.main_widget, width=5, height=4, dpi=100)
-        l.addWidget(sc3)
+        self.layout = QtGui.QVBoxLayout(self.window.main_widget)
 
-        seek_slider = QtGui.QSlider(QtCore.Qt.Horizontal, self.window.main_widget)
-        seek_slider.setGeometry(30, 40, 100, 30)
-        l.addWidget(seek_slider)
+        self.seek_slider = QtGui.QSlider(QtCore.Qt.Horizontal, self.window.main_widget)
+        self.seek_slider.setGeometry(30, 40, 100, 30)
+        self.layout.addWidget(self.seek_slider)
 
-        sc.set_seek_slider(seek_slider)
-        sc2.set_seek_slider(seek_slider)
-        sc3.set_seek_slider(seek_slider)
+        self.zoom_slider = QtGui.QSlider(QtCore.Qt.Horizontal, self.window.main_widget)
+        self.zoom_slider.setGeometry(30, 40, 100, 30)
+        self.layout.addWidget(self.zoom_slider)
 
-        zoom_slider = QtGui.QSlider(QtCore.Qt.Horizontal, self.window.main_widget)
-        zoom_slider.setGeometry(30, 40, 100, 30)
-        l.addWidget(zoom_slider)
+        btn = QtGui.QPushButton('Test Button', self.window.main_widget)
+        btn.clicked.connect(lambda: self.add_graph(b1))
+        self.layout.addWidget(btn)
 
-        sc.set_zoom_slider(zoom_slider)
-        sc2.set_zoom_slider(zoom_slider)
-        sc3.set_zoom_slider(zoom_slider)
+        #self.add_graph(b1)
+        #self.add_graph(b2)
+        #self.add_graph(b3)
 
         self.window.main_widget.setFocus()
         self.window.setCentralWidget(self.window.main_widget)
+
+    def add_graph(self, behavior):
+        sc = ColorBarCanvas(behavior, self.window.main_widget, width=5, height=4, dpi=100)
+        sc.set_seek_slider(self.seek_slider)
+        sc.set_zoom_slider(self.zoom_slider)
+        self.layout.addWidget(sc)
+
+
 
 
 # copied from http://matplotlib.org/examples/user_interfaces/embedding_in_qt4.html
