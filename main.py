@@ -39,7 +39,7 @@ def main():
     this_screen = MainScreen(main_controller)
 
     ### This commented out code shows how perform a simple database query
-    all_data = main_controller.retrieve_graph_data('b1','b2','b3')
+    #all_data = main_controller.retrieve_graph_data('b1','b2','b3')
 
     ### The following displays the current query repertoire
     child_ids = main_controller.get_all_child_ids()

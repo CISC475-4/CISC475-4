@@ -22,18 +22,13 @@ class VizGraphing():
         self.init_graphs() 
 
     def init_graphs(self):
-        testdata = self.window.controller.retrieve_graph_data('b1', 'b2', 'b3')
+        testdata = self.window.controller.get_behaviors_for_child(['b1'], '20274')
         b1 = []
         for i in testdata:
             b1.append(i[0])
-        b2 = []
-        for i in testdata:
-            b2.append(i[1])
-        b3 = []
-        for i in testdata:
-            b3.append(i[2])
 
         self.layout = QtGui.QVBoxLayout(self.window.main_widget)
+        self.layout.setContentsMargins(0,0,0,0)
 
         self.seek_slider = QtGui.QSlider(QtCore.Qt.Horizontal, self.window.main_widget)
         self.seek_slider.setGeometry(30, 40, 100, 30)
@@ -47,18 +42,23 @@ class VizGraphing():
         btn.clicked.connect(lambda: self.add_graph(b1))
         self.layout.addWidget(btn)
 
-        #self.add_graph(b1)
-        #self.add_graph(b2)
-        #self.add_graph(b3)
+        self.layout.addStretch()
 
         self.window.main_widget.setFocus()
         self.window.setCentralWidget(self.window.main_widget)
 
     def add_graph(self, behavior):
+        bar_layout = QtGui.QHBoxLayout()
+
+        btn = QtGui.QPushButton('X')
+        #btn.clicked.connect(ChildLayout)
+        bar_layout.addWidget(btn)
+
         sc = ColorBarCanvas(behavior, self.window.main_widget, width=5, height=4, dpi=100)
         sc.set_seek_slider(self.seek_slider)
         sc.set_zoom_slider(self.zoom_slider)
-        self.layout.addWidget(sc)
+        bar_layout.addWidget(sc)
+        self.layout.addLayout(bar_layout)
 
 
 
@@ -82,8 +82,6 @@ class MyMplCanvas(FigureCanvas):
                                    QtGui.QSizePolicy.Expanding)
         FigureCanvas.updateGeometry(self)
 
-    def compute_initial_figure(self):
-        pass
 
 # copied from http://matplotlib.org/examples/user_interfaces/embedding_in_qt4.html
 class ColorBarCanvas(MyMplCanvas):
