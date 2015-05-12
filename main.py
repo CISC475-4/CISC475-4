@@ -51,6 +51,9 @@ def main():
     #range_behaviors = main_controller.get_behaviors_for_child(['b1','b2','b3'], '20274', 1, 10, 15, True)
     #combo_indices = main_controller.get_all_combo_indexes('20274','1')
     #combo_data = main_controller.get_group_data_by_combo_index(['*'], 13, 20274, 1)
+    #num_chunks = main_controller.get_num_chunks(13, 20274, 1)
+    #chunk_max_dur = main_controller.get_chunk_max_duration(13, 20274, 1)
+    #chunk_avg_dur = main_controller.get_chunk_avg_duration(13, 20274, 1)
 
     #sys.exit(application.exec_())
 

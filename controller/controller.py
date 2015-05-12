@@ -152,6 +152,12 @@ class Controller:
             'combo_index' : combo_index
         }
         return self.db.query_single(column, table, conditions)
+
+    def get_freq_occurence(self, combo_index, child_id, session_id):
+        '''
+        TODO: Requires a join with the chunk table (top 3 behaviors)
+        Retrieves the top behaviors for each combo/code
+        '''
          
 
     ## DATA SPECIFIC TO CHUNK TABLE
@@ -180,7 +186,9 @@ class Controller:
         # retrieve time column if requested
         if timestamps:
             behaviors.append('time')
-        return self.db.query_range(behaviors, 'Chunk', range_conditions, equality_conditions)
+            return self.db.query_range(behaviors, 'Chunk', range_conditions, equality_conditions)
+        else:
+            return self.db.query_multiple(behaviors, 'Chunk', equality_conditions)
 
     def get_max_behavior(self, behaviors, child_id, session_id=None, time_start=None, time_end=None):
         '''
