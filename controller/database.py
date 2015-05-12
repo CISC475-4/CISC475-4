@@ -153,9 +153,36 @@ class DatabaseManager(object):
         cursor.execute(query)  
         return cursor.fetchall() #a list of data rows
 
+    def create_condition_query(self, conditions):
+        '''
+        This functions serves as logic to create the sub-query with conditional syntax
+        '''
+        #TODO: handle other conditions that are not plainly equivalent cases
+        qry = " WHERE "
+        for pair in conditions.iteritems():
+            # TODO: distinguish between numeric and non-numeric keys
+            qry += pair[0] + " = " + str(pair[1]) + " AND " # pair = (key, value)
+        qry = qry.rstrip(' AND ')
+        return qry 
+        
+    def create_range_condition_query(self, range_conditions):
+        '''
+        Function to create the range condition query
+        Will not prepend a WHERE, must be added manually
+        '''
+        qry = ""
+        for key, val in range_conditions.iteritems():
+            # key here is the columnname to be restricted, val is the dictionary of conditions
+            if 'min' in val:
+                qry += '{k} >= {m} '.format(k=key, m=val['min'])
+                if 'max' in val:
+                    qry += 'AND {k} <= {m} '.format(k=key, m=val['max'])
+            elif 'max' in val:
+                qry += '{k} <= {m} '.format(k=key, m=val['max'])
+            qry += " AND " 
+        qry = qry.rstrip(' AND ')
+        return qry
 
-
-    ## TODO: HERE BE ALL THE DB STUFF FOR FINAL IMPLEMENTATION
     def retrieve_db_info(self, table=""):
         '''
         performs queries for such information as table names and full table info
@@ -166,7 +193,6 @@ class DatabaseManager(object):
         else:
             # results as (col_num, col_name, type, ?, ?, ?)
             qry = "PRAGMA table_info(" + table + ")"
-        print qry
         return self.execute_query(qry)
 
     def retrieve_distinct_by_name(self, column, table):
@@ -186,12 +212,7 @@ class DatabaseManager(object):
         '''     
         qry = "SELECT " + column + " FROM " + table
         if conditions != {}:
-            #TODO: handle other conditions that are not plainly equivalent cases
-            qry += " WHERE "
-            for pair in conditions.iteritems():
-                # TODO: distinguish between numeric and non-numeric keys
-               qry += pair[0] + " = " + pair[1] + " and " # pair = (key,, value)
-            qry = qry[:len(qry)-4] # remove floating and 
+            qry += self.create_condition_query(conditions)
         return self.execute_query(qry)
 
     def query_multiple(self, columns, table, conditions={}):
@@ -203,29 +224,64 @@ class DatabaseManager(object):
         qry = "SELECT " 
         for col in columns:
             qry += col + ", "
-        qry = qry[:len(qry)-2]
+        qry = qry.rstrip(', ')
         qry += " FROM " + table
 
         if conditions != {}:
-            qry += " WHERE " 
-            for pair in conditions.iteritems():
-                qry += pair[0] + " = " + pair[1] + " and "
-            qry = qry[:len(qry)-4]
-
+            qry += self.create_condition_query(conditions)
         return self.execute_query(qry) 
 
-    def query_range(self, columns, table, range_conditions={}, conditions={}):
+    def query_range(self, columns, table, range_conditions, equality_conditions={}):
         '''
         columns - a list of columns to be retrieved
         table - from which ot be retrieved
-        range_conditions - a dictionary of ranges (should be in form { col_name : '>=num;<=num', ... }
-        conditions - other conditions (equality conditions)
+        range_conditions - a two-leveled dictionary { col_name: {'min': #, 'max': #}, ...}
+        conditions - other conditions (equality conditions)=
         '''
-        pass
+        qry = 'SELECT '
+        for cname in columns:
+            qry += cname + ', '
+        qry = qry.rstrip(', ')
+        qry += ' FROM {t} '.format(t=table)
+        if equality_conditions != {}:
+            qry += self.create_condition_query(equality_conditions)
+            qry += ' AND '
+        else:
+            qry += 'WHERE '
+        qry += self.create_range_condition_query(range_conditions) 
+        return self.execute_query(qry)
 
-    def query_aggregate(self, column, table, fn, conditions={}):
+    def query_aggregate(self, column, table, fn, range_conditions={}, equality_conditions={}):
         '''
-        fn - the aggregate functino to perform
+        fn - the code for the aggregate functino to perform
+        if an unhandled code is given, it simply performs a select statement
         returns the result of the given aggregate fn on the database
+
+        aggregate functions here are NOT exhaustive
+        add codes for additional necessary aggregate functions later
         '''
-        
+        aggr_command = ""
+
+        if fn == 0: #MAX
+            aggr_command = "MAX" 
+        elif fn == 1: #MIN
+            aggr_command = "MIN"
+        elif fn == 2: #COUNT
+            aggr_command = "COUNT"
+        elif fn == 3: #AVG
+            aggr_command = "AVG"
+
+        cond_qry = "" #conditions
+        if equality_conditions != {} and range_conditions != {}:
+            cond_qry = self.create_condition_query(equality_conditions)
+            cond_qry += ' AND '
+            cond_qry += self.create_range_condition_query(range_conditions)
+        elif equality_conditions != {}:
+            cond_qry += self.create_condition_query(equality_conditions)
+        elif range_conditions != {}:
+            cond_qry += ' WHERE '
+            cond_qry += self.create_range_condition_query(range_conditions)
+
+        qry = "SELECT " + aggr_command + "(" + column + ") " + "FROM " + table + cond_qry
+        print qry
+        return self.execute_query(qry)
