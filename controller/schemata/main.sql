@@ -10,15 +10,15 @@ create table if not exists Session(
 );
 -- Single time records for all Sessions
 --
--- b1, b2, and b3 are behaviors. As more are added, we set the existing records to NULL
+-- behavior_id is something like 1, and behavior_lvl is the amount between 1 and 5
 -- The behaviors will have to be translated using the code table later
+-- Note: changed individual behavior column to a pair of id and lvl
 create table if not exists Chunk(
 	child_id numeric(5) not null,
 	session_id numeric(2) not null,
 	time real not null,
-	b1 numeric(1),
-	b2 numeric(1),
-	b3 numeric(1),
+  behavior_id numeric(3),
+  behavior_lvl numeric(1),
 	primary key(child_id, session_id, time),
 	foreign key(child_id, session_id) references Session
 );
