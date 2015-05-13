@@ -57,9 +57,15 @@ docs/_build/
 target/
 
 # Example data files that shouldn't be on GitHub. Assume they can be anywhere.
-**/*.xlsx
 # To leave a specific file in, use !<filename>
+**/*.xlsx
 **/*.csv
-.swp
-.DS_Store
-data.sqlite3
+
+# Vim swap files. Useful if you keep files open in vim and use `git commit -a`
+**/*.swp
+
+# OS X-specific directories for storing OS X-specific (meta)data
+**/*.DS_Store
+
+# Databases
+**/data.sqlite3*
