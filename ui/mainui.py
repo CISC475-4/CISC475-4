@@ -7,6 +7,7 @@ from PySide import QtGui, QtCore
 import viztoolbar
 import vizmenubar
 import vizgraphing
+import vizdialog
 
 class MainScreen(QtGui.QMainWindow):
     """
@@ -42,7 +43,7 @@ class MainScreen(QtGui.QMainWindow):
         self.toolbar = viztoolbar.VizToolBar(self)
 
         # add the graphs
-        vizgraphing.VizGraphing(self)
+        self.graph_area = vizgraphing.VizGraphing(self)
 
         # window props
         self.setWindowTitle('Data Visualization')
@@ -50,23 +51,39 @@ class MainScreen(QtGui.QMainWindow):
 
     def setup_actions(self):
 
-        # set up exit action and its properties
-        self.exit_action = QtGui.QAction(QtGui.QIcon('ui/ui_assets/run.png'), '&XLStoCSV', self)
-        self.exit_action.setShortcut('Ctrl+Q')
-        self.exit_action.setStatusTip('XLStoCSV')
-        self.exit_action.triggered.connect(self.close)
-
         # set up open file action and its properties
         self.open_file_action = QtGui.QAction(QtGui.QIcon('ui/ui_assets/open.png'), 'Open', self)
         self.open_file_action.setShortcut('Ctrl+O')
         self.open_file_action.setStatusTip('Open new file')
         self.open_file_action.triggered.connect(use_open_file_dialog(self, self.controller.import_file_to_database))
 
+        self.add_graph_action = QtGui.QAction(QtGui.QIcon('ui/ui_assets/add_graph.png'), 'Add Graph', self)
+        self.add_graph_action.setShortcut('Ctrl+G')
+        self.add_graph_action.setStatusTip('Add new graph')
+        self.add_graph_action.triggered.connect(self.add_graph)
+
+        self.clear_database_action = QtGui.QAction(QtGui.QIcon('ui/ui_assets/clear_db.png'), 'Clear Database', self)
+        self.clear_database_action.setStatusTip('Clear imported files')
+        self.clear_database_action.triggered.connect(self.clear_database)
+
         # set up export graph action
-        self.export_action = QtGui.QAction(QtGui.QIcon('ui/ui_assets/download.png'), 'Export', self)
-        self.export_action.setShortcut('Ctrl+S')
-        self.export_action.setStatusTip('Export graph')
-        self.export_action.triggered.connect(export_graph)
+        # self.export_action = QtGui.QAction(QtGui.QIcon('ui/ui_assets/download.png'), 'Export', self)
+        # self.export_action.setShortcut('Ctrl+S')
+        # self.export_action.setStatusTip('Export graph')
+        # self.export_action.triggered.connect(export_graph)
+
+    def add_graph(self):
+        self.add_graph_dialog = vizdialog.AddGraphDialog(self)
+        self.add_graph_dialog.show()
+        # QtGui.QMessageBox.about(self, "Poop", "You need to poop?")
+
+    def export_graph(self):
+        # purely checking for functionality, need to set up a catch for when there is no graph drawn
+        #self.s3.savefig("foo.png", bbox_inches='tight')
+        print("Exported")
+
+    def clear_database(self):   
+        print("Database NOT cleared")
 
 # ----------------------------------------------------------------------------
 # Other functions
@@ -92,11 +109,7 @@ def use_open_file_dialog(window, function_to_pass_filename):
         # show the open file dialog and get the filename
         filename, _ = QtGui.QFileDialog.getOpenFileName(window, 'Open file', '~/')
         # call the unique function that does something with the filename
-        function_to_pass_filename(filename)
+        if filename:
+            function_to_pass_filename(filename)
 
     return filename_handler
-
-def export_graph():
-    # purely checking for functionality, need to set up a catch for when there is no graph drawn
-    print('Exported')
-    #pyplot.savefig("foo.png", bbox_inches='tight')
