@@ -43,7 +43,7 @@ class MainScreen(QtGui.QMainWindow):
         self.toolbar = viztoolbar.VizToolBar(self)
 
         # add the graphs
-        vizgraphing.VizGraphing(self)
+        self.graph_area = vizgraphing.VizGraphing(self)
 
         # window props
         self.setWindowTitle('Data Visualization')
@@ -113,5 +113,3 @@ def use_open_file_dialog(window, function_to_pass_filename):
             function_to_pass_filename(filename)
 
     return filename_handler
-
-

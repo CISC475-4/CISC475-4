@@ -15,9 +15,12 @@ class AddGraphDialog(QtGui.QDialog):
         self.spam_list2 = ['cheese balls', 'fries', 'egg muffins']
         self.spam_list3 = ['cheese balls', 'fries', 'egg muffins']
 
+        self.child_ids = self.parent().controller.get_all_child_ids()
+        print(self.child_ids)
+        
         # child choicebox
         self.combobox_child = QtGui.QComboBox(self)
-        self.combobox_child.addItems(self.spam_list)
+        self.combobox_child.addItems(self.child_ids)
         # choicebox label
         self.child_label = QtGui.QLabel('Child:', self)
 
@@ -65,9 +68,11 @@ class AddGraphDialog(QtGui.QDialog):
         self.vertical_layout.addLayout(self.horizontal_layout)      
 
     def ok_on_click(self):
-        print(self.combobox_child.currentText())
-        print(self.combobox_session.currentText())
-        print(self.combobox_behavior.currentText())
+        child = self.combobox_child.currentText()
+        session = self.combobox_session.currentText()
+        behavior = self.combobox_behavior.currentText()
+
+        # TODO: self.parent.graph_area.add_graph()
         
 
 

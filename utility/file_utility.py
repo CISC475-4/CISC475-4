@@ -5,7 +5,7 @@ Source code in FileUtility.py regards reading the data from a structured CSV fil
 
 This accounts for the step between raw data and storage in the database
 """
-#TODO: multithreading with python threading library
+# TODO: multithreading with python threading library
 
 import xlrd
 import sys
@@ -15,6 +15,14 @@ from re import sub, findall
 from os import path as ospath
 
 
+class IDS:
+    """
+    Id indexes, ordered as they are in the filename of the excel files.
+    """
+    CHILD_ID = 0
+    SESSION_ID = 1
+
+
 class DataSet(object):
     """
     DataSet object represents all data points from an XLS worksheet
@@ -22,7 +30,7 @@ class DataSet(object):
     Data - A dictionary of columns (String) with all corresponding data types (List of values)
         Keys - individual columns
         Values - A list of values in index order of the instances from the spreasheet
-                 all data points for instance i can be found at Data.Keys(x)[i] 
+                 all data points for instance i can be found at Data.Keys(x)[i]
                  for all xeX where X is the set of off Keys in the the dictionary, Data
     file_name - name of the file
     sheet_name - name of the sheet of origin
@@ -34,8 +42,9 @@ class DataSet(object):
     """
     def __init__(self, column, file_name, sheet_name, sheet_function, time_accessed, total_rows, child_id, session_id):
         self.Data = {}
-        for i in range(0,len(column)):
-            self.Data[column[i]] = [] #instances should be added individually
+        for i in range(len(column)):
+            # instances should be added individually
+            self.Data[column[i]] = []
 
         self.file_name = file_name
         self.sheet_name = sheet_name
@@ -45,18 +54,17 @@ class DataSet(object):
         self.child_id = child_id
         self.session_id = session_id
 
-
     def __repr__(self):
         return str(self.Data)
-
 
     def add_instance(self, columns, values):
         """
         columns - to ensure the data is placed in the correct list
         values - list of values to columns
-        add_datapoint adds a new data instances to the end of the Data.values list corresponding to the same data column (from input)
+        add_datapoint adds a new data instances to the end of the Data.values
+            list corresponding to the same data column (from input)
         """
-        for i in range(0,len(columns)):
+        for i in range(len(columns)):
             self.Data[columns[i]].append(values[i])
 
     def get_instance_at(self, index):
@@ -68,14 +76,12 @@ class DataSet(object):
             instance[key] = self.Data[key][index]
         return instance
 
-
     def get_next_instance(self):
         """
         generator function for retrieving data instances
         """
-        for i in range(0, self.total_rows): 
+        for i in range(self.total_rows):
             yield self.get_instance_at(i)
-        
 
     def dataset_to_database(self, database):
         """
@@ -86,42 +92,58 @@ class DataSet(object):
 
 def get_data_from_xls(path):
     """
-    bypasses the step of converting an XLS spreedsheet into a CSV. Data is loaded to memory directly from the given XLS spreedsheet.
+    Bypasses the step of converting an XLS spreedsheet into a CSV. Data is
+        loaded to memory directly from the given XLS spreedsheet.
     """
-    datasets = [] 
-    
+    datasets = []
+
     try:
-        with xlrd.open_workbook(path) as wb: 
+        # Open the Excel workbook
+        with xlrd.open_workbook(path) as wb:
+            # Get the current time
             access_time = time()
+            # Get only the file name
             file_name = ospath.basename(path)
+
             ids = parse_filename(file_name)
+            print(ids, file_name)
 
             num_worksheets = wb.nsheets
 
-            for i in range(0, num_worksheets): 
-                doc = wb.sheet_by_index(i) #current workbook, loads to a single dataset object
-                rows = doc.nrows #includes the header in count. (Disclude for dataset instantiation)
+            for i in range(num_worksheets):
+                doc = wb.sheet_by_index(i)  # current workbook, loads to a single dataset object
+                rows = doc.nrows  # includes the header in count. (Disclude for dataset instantiation)
 
                 columns = uniqify_list([str(cell) for cell in doc.row_values(0)])
 
-                dataset = DataSet(columns,file_name,doc.name,doc.name,access_time,rows-1,ids[0],ids[1])
-                #TODO: above, get correct sheet function 
+                dataset = DataSet(
+                    columns,
+                    file_name,
+                    doc.name,
+                    doc.name,
+                    access_time,
+                    rows-1,
+                    ids[IDS.CHILD_ID],
+                    ids[IDS.SESSION_ID]
+                )
+                # TODO: above, get correct sheet function
 
-                for j in range(1, rows): 
-                    next_row = doc.row_values(j) 
+                for j in range(1, rows):
+                    next_row = doc.row_values(j)
                     instance = []
-                    for cell in next_row: 
-                        if type(cell) == float and cell %1 == 0:
+                    for cell in next_row:
+                        if type(cell) == float and cell % 1 == 0:
                             cell = int(cell)
                         instance.append(str(cell))
-                    dataset.add_instance(columns, instance) 
+                    dataset.add_instance(columns, instance)
                 datasets.append(dataset)
-    except IOError: 
+    except IOError:
+        # TODO: in production this error should go up to the controller
         logging.error("FileUtility: Unable to open file at %s" % (path))
-        return 
+        return
 
-    return tuple(datasets) 
-        
+    return tuple(datasets)
+
 
 def get_data_from_csv(path):
 
@@ -136,12 +158,22 @@ def get_data_from_csv(path):
             file_name = ospath.basename(path)
             ids = parse_filename(file_name)
 
-            #deal with duplicates once, before creating a dictionary 
+            # deal with duplicates once, before creating a dictionary
             columns = uniqify_list(dataFile.readline().strip().split(','))
             rows = 1
 
-            dataset = DataSet(columns,file_name,file_name,file_name,access_time,rows,ids[0],ids[1])
-            for nextLine in dataFile: 
+            dataset = DataSet(
+                columns,
+                file_name,
+                file_name,
+                file_name,
+                access_time,
+                rows,
+                ids[IDS.CHILD_ID],
+                ids[IDS.SESSION_ID]
+            )
+
+            for nextLine in dataFile:
                 data_points = nextLine.strip().split(',')
                 dataset.add_instance(columns, data_points)
                 rows += 1
@@ -159,36 +191,36 @@ def xls_to_csv(path):
 
     Returns the pathname of each created file
     """
-    names = [] #for return
+    names = []  # for return
 
     try:
         with xlrd.open_workbook(path) as wb:
-            n = wb.nsheets #worksheets 
+            n = wb.nsheets  # worksheets
             # convert each sheet in wb to its own csv
             for i in range(0, n):
-                doc = wb.sheet_by_index(i) #current worksheet
-                r = doc.nrows #rows
- 
-                csv = open(sub('\.xls[x]$','',path) + doc.name + '.csv', 'w')
-                names.append(str(csv.name)) #for return
-            
+                doc = wb.sheet_by_index(i)  # current worksheet
+                r = doc.nrows  # rows
+
+                csv = open(sub('\.xls[x]$', '', path) + doc.name + '.csv', 'w')
+                names.append(str(csv.name))  # for return
+
                 for j in range(0, r):
                     row_str = ""
 
                     for cell in doc.row_values(j):
-                    #need to change the values from floats to match the original data
+                        # need to change the values from floats to match the original data
                         if type(cell) == float and cell % 1 == 0:
                             cell = int(cell)
                         row_str += str(cell) + ','
 
-                    #remove trailing ',' and write
+                    # remove trailing ',' and write
                     csv.write(row_str[0:len(row_str)-2] + '\n')
-            
+
                 wb.unload_sheet(i)
                 csv.close()
     except IOError:
         logging.error("FileUtility: Unable to open file at %s" % (path))
-        return 
+        return
 
     return tuple(names)
 
@@ -196,9 +228,9 @@ def xls_to_csv(path):
 def uniqify_list(str_list):
     """
     give duplicate elemnts in a list of string a unique name by appending it's index in the list
-    """ 
-    for k in range(0,len(str_list)):
-        if str_list[k] in str_list[k+1:]:#append index as a unique identifier
+    """
+    for k in range(len(str_list)):
+        if str_list[k] in str_list[k+1:]:  # append index as a unique identifier
             str_list[k] = str_list[k]+'_'+str(k)
 
     return str_list
@@ -216,7 +248,6 @@ def parse_filename(filename):
     ids = findall('[0-9]+', filename)
     if len(ids) != 2:
         logging.error("FileUtility: unexpected filename")
-        return 
+        return
 
-    return tuple(ids) #CHILD_ID, SESSION_ID
-    
+    return tuple(ids)  # CHILD_ID, SESSION_ID

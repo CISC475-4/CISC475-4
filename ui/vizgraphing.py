@@ -22,35 +22,45 @@ class VizGraphing():
         self.init_graphs() 
 
     def init_graphs(self):
-        #testdata = self.window.controller.retrieve_graph_data()
-        #print testdata
-        # set-up matplotlib canvas
-        l = QtGui.QVBoxLayout(self.window.main_widget)
-        sc = ColorBarCanvas(self.window.main_widget, width=5, height=4, dpi=100)
-        l.addWidget(sc)
-        sc2 = ColorBarCanvas(self.window.main_widget, width=5, height=4, dpi=100)
-        l.addWidget(sc2)
-        sc3 = ColorBarCanvas(self.window.main_widget, width=5, height=4, dpi=100)
-        l.addWidget(sc3)
+        testdata = self.window.controller.get_behaviors_for_child(['b1'], '20274')
+        b1 = []
+        for i in testdata:
+            b1.append(i[0])
 
-        seek_slider = QtGui.QSlider(QtCore.Qt.Horizontal, self.window.main_widget)
-        seek_slider.setGeometry(30, 40, 100, 30)
-        l.addWidget(seek_slider)
+        self.layout = QtGui.QVBoxLayout(self.window.main_widget)
+        self.layout.setContentsMargins(0,0,0,0)
 
-        sc.set_seek_slider(seek_slider)
-        sc2.set_seek_slider(seek_slider)
-        sc3.set_seek_slider(seek_slider)
+        self.seek_slider = QtGui.QSlider(QtCore.Qt.Horizontal, self.window.main_widget)
+        self.seek_slider.setGeometry(30, 40, 100, 30)
+        self.layout.addWidget(self.seek_slider)
 
-        zoom_slider = QtGui.QSlider(QtCore.Qt.Horizontal, self.window.main_widget)
-        zoom_slider.setGeometry(30, 40, 100, 30)
-        l.addWidget(zoom_slider)
+        self.zoom_slider = QtGui.QSlider(QtCore.Qt.Horizontal, self.window.main_widget)
+        self.zoom_slider.setGeometry(30, 40, 100, 30)
+        self.layout.addWidget(self.zoom_slider)
 
-        sc.set_zoom_slider(zoom_slider)
-        sc2.set_zoom_slider(zoom_slider)
-        sc3.set_zoom_slider(zoom_slider)
+        # btn = QtGui.QPushButton('Test Button', self.window.main_widget)
+        # btn.clicked.connect(lambda: self.add_graph(b1))
+        # self.layout.addWidget(btn)
+
+        self.layout.addStretch()
 
         self.window.main_widget.setFocus()
         self.window.setCentralWidget(self.window.main_widget)
+
+    def add_graph(self, behavior):
+        bar_layout = QtGui.QHBoxLayout()
+
+        btn = QtGui.QPushButton('X')
+        #btn.clicked.connect(ChildLayout)
+        bar_layout.addWidget(btn)
+
+        sc = ColorBarCanvas(behavior, self.window.main_widget, width=5, height=4, dpi=100)
+        sc.set_seek_slider(self.seek_slider)
+        sc.set_zoom_slider(self.zoom_slider)
+        bar_layout.addWidget(sc)
+        self.layout.addLayout(bar_layout)
+
+
 
 
 # copied from http://matplotlib.org/examples/user_interfaces/embedding_in_qt4.html
@@ -72,13 +82,12 @@ class MyMplCanvas(FigureCanvas):
                                    QtGui.QSizePolicy.Expanding)
         FigureCanvas.updateGeometry(self)
 
-    def compute_initial_figure(self):
-        pass
 
 # copied from http://matplotlib.org/examples/user_interfaces/embedding_in_qt4.html
 class ColorBarCanvas(MyMplCanvas):
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, dataset, *args, **kwargs):
+        self.dataset = dataset
         MyMplCanvas.__init__(self, *args, **kwargs)
 
     def set_seek_slider(self, seek_slider):
@@ -93,16 +102,20 @@ class ColorBarCanvas(MyMplCanvas):
     def compute_initial_figure(self):
         # The four colors in order from left to right
         # cmap will hold the data
-        self.test_data = [int(10*random.random()) for i in xrange(10000)]
+        #self.test_data = [int(10*random.random()) for i in xrange(10000)]
         #self.test_data = range(0, 1000)
-        self.data_range = max(self.test_data) - min(self.test_data) + 1 # possible efficiency problem
+        self.test_data = self.dataset
+        data_min = min(self.test_data)
+        data_max = max(self.test_data)
+        self.data_range = data_max - data_min + 1 # possible efficiency problem
         self.colors = []
         for i in range(0, self.data_range):
-            self.colors.append([0., .4, i / float(self.data_range)])
+            #self.colors.append([0., .4, i / float(self.data_range)])
+            self.colors.append([i / float(self.data_range), 1 - (i / float(self.data_range)), .4])
 
         self.color_list = []
         for i in self.test_data: 
-            self.color_list.append(self.colors[i])
+            self.color_list.append(self.colors[i - data_min])
 
         self.cmap = mpl.colors.ListedColormap(self.color_list)
         self.cmap.set_over((1., 0., 0.))
@@ -121,7 +134,7 @@ class ColorBarCanvas(MyMplCanvas):
 
         if window_size == 0:
             window_size = 10
-        if window_size > len(self.color_list):
+        if window_size > len(self.color_list) or self.zoom_slider.value() == 99:
             window_size = len(self.color_list)
 
         window_start = int((len(self.color_list) - window_size) * self.seek_slider.value() / 99.0)
