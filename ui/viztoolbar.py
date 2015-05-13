@@ -14,7 +14,7 @@ class VizToolBar():
 
     def init_toolbar(self):
         self.toolbar = self.window.addToolBar('main_toolbar')
-        self.toolbar.addAction(self.window.exit_action)
         self.toolbar.addAction(self.window.open_file_action)
-        self.toolbar.addAction(self.window.export_action)
+        self.toolbar.addAction(self.window.add_graph_action)
+        # self.toolbar.addAction(self.window.export_action)
 
