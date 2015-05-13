@@ -165,6 +165,24 @@ class DatabaseManager(object):
         qry = qry.rstrip(' AND ')
         return qry 
         
+    def create_range_condition_query(self, range_conditions):
+        '''
+        Function to create the range condition query
+        Will not prepend a WHERE, must be added manually
+        '''
+        qry = ""
+        for key, val in range_conditions.iteritems():
+            # key here is the columnname to be restricted, val is the dictionary of conditions
+            if 'min' in val:
+                qry += '{k} >= {m} '.format(k=key, m=val['min'])
+                if 'max' in val:
+                    qry += 'AND {k} <= {m} '.format(k=key, m=val['max'])
+            elif 'max' in val:
+                qry += '{k} <= {m} '.format(k=key, m=val['max'])
+            qry += " AND " 
+        qry = qry.rstrip(' AND ')
+        return qry
+
     def retrieve_db_info(self, table=""):
         '''
         performs queries for such information as table names and full table info
@@ -211,10 +229,9 @@ class DatabaseManager(object):
 
         if conditions != {}:
             qry += self.create_condition_query(conditions)
-
         return self.execute_query(qry) 
 
-    def query_range(self, columns, table, range_conditions, conditions={}):
+    def query_range(self, columns, table, range_conditions, equality_conditions={}):
         '''
         columns - a list of columns to be retrieved
         table - from which ot be retrieved
@@ -226,24 +243,15 @@ class DatabaseManager(object):
             qry += cname + ', '
         qry = qry.rstrip(', ')
         qry += ' FROM {t} '.format(t=table)
-        if conditions != {}:
-            qry += self.create_condition_query(conditions)
+        if equality_conditions != {}:
+            qry += self.create_condition_query(equality_conditions)
             qry += ' AND '
         else:
             qry += 'WHERE '
-        for key, val in range_conditions.iteritems():
-            # key here is the columnname to be restricted, val is the dictionary of conditions
-            if 'min' in val:
-                qry += '{k} >= {m} '.format(k=key, m=val['min'])
-                if 'max' in val:
-                    qry += 'AND {k} <= {m} '.format(k=key, m=val['max'])
-            elif 'max' in val:
-                qry += '{k} <= {m} '.format(k=key, m=val['max'])
-            qry += " AND " 
-        qry = qry.rstrip(' AND ')
+        qry += self.create_range_condition_query(range_conditions) 
         return self.execute_query(qry)
 
-    def query_aggregate(self, column, table, fn, conditions={}):
+    def query_aggregate(self, column, table, fn, range_conditions={}, equality_conditions={}):
         '''
         fn - the code for the aggregate functino to perform
         if an unhandled code is given, it simply performs a select statement
@@ -264,8 +272,16 @@ class DatabaseManager(object):
             aggr_command = "AVG"
 
         cond_qry = "" #conditions
-        if conditions != {}:
-            cond_qry = self.create_condition_query(conditions)
+        if equality_conditions != {} and range_conditions != {}:
+            cond_qry = self.create_condition_query(equality_conditions)
+            cond_qry += ' AND '
+            cond_qry += self.create_range_condition_query(range_conditions)
+        elif equality_conditions != {}:
+            cond_qry += self.create_condition_query(equality_conditions)
+        elif range_conditions != {}:
+            cond_qry += ' WHERE '
+            cond_qry += self.create_range_condition_query(range_conditions)
 
         qry = "SELECT " + aggr_command + "(" + column + ") " + "FROM " + table + cond_qry
+        print qry
         return self.execute_query(qry)
