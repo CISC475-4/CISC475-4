@@ -39,7 +39,7 @@ class Controller:
         #     logging.error(e)
         except Exception as e:
             # TODO: Get a modal to pop up in the UI displaying the error message
-            logging.error(e)
+            logging.error(e.message)
 
 
     # TODO implement method
@@ -125,23 +125,6 @@ class Controller:
         return - a list of strings (where each string represents a session id)
         '''
         # TODO: Get data from database
-        pass
-
-
-"""""
-Behaviors needed for graphing:
-x- Retreive a list of child ids and session ids
-- After we have chosen a child/session, choose a behavior for each color bar graph.
-- Load data for selected session(s)
-    - One session multiple behaviors
-    - Multiple sessions one behavior
-
-Frontend???
-- Specify two colors for graphing intensity -- for each behavior???
-- Select range of values (time) to display
-
-"""""
-=======
         return [info[1] for info in self.db.retrieve_db_info(tablename)] #info[1] index of column name
     
     def get_all_child_ids(self):
@@ -241,7 +224,7 @@ Frontend???
         TODO: Requires a join with the chunk table (top 3 behaviors)
         Retrieves the top behaviors for each combo/code
         '''
-         
+        pass
 
     ## DATA SPECIFIC TO CHUNK TABLE
     def get_behaviors_for_child(self, behaviors, child_id, session_id=None, time_start=None, time_end=None, timestamps=None):
@@ -266,12 +249,34 @@ Frontend???
         equality_conditions = {'child_id': child_id}
         if session_id is not None:
             equality_conditions['session_id'] = session_id
+        columns = []
+        # retrieve behavior columns
+        bh_amt = len(behaviors)
+        if bh_amt > 0:
+            columns.append('behavior_id')
+            columns.append('behavior_lvl')
         # retrieve time column if requested
         if timestamps:
-            behaviors.append('time')
-            return self.db.query_range(behaviors, 'Chunk', range_conditions, equality_conditions)
+            columns.append('time')
+            rows = self.db.query_range(sorted(columns), 'Chunk', range_conditions, equality_conditions)
         else:
-            return self.db.query_multiple(behaviors, 'Chunk', equality_conditions)
+            rows = self.db.query_multiple(sorted(columns), 'Chunk', equality_conditions)
+
+        results = []
+        # the list comprehension in the next row does the following:
+        #   grabs a group of bh_amt consecutive list elements (corresponding to each behavior)
+        #   merges them into one list, returned as such
+        # [ b1, b2, b3... bn, time ]
+        # if there was time. If not, it's just the list
+        for group in [rows[bh_amt*i:bh_amt*i+bh_amt] for i in range(0, (len(rows)/bh_amt)+1)]:
+            if group != []:
+                r = [group[i][1] for i in range(len(group))]
+                if timestamps:
+                    r.append(group[0][2])
+                results.append(r)
+        
+        #print results
+        return results
 
     def get_max_behavior(self, behaviors, child_id, session_id=None, time_start=None, time_end=None):
         '''
@@ -393,4 +398,3 @@ Frontend???
         calls db to query for specific columns in the Session_Meta table
         '''
         return self.db.query_multiple(columns, 'Session_Meta')
->>>>>>> newuistuff

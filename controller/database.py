@@ -5,13 +5,6 @@ import os
 import sys
 import logging
 
-'''
-Jamie's notes
-can we use a connection.create_aggregate() for certain things?
-should replace the loading code with a 'cur.executemany' call that loops with her iter
-'''
-
-
 class DatabaseManager(object):
     '''
     Database Wrapper Class
@@ -71,10 +64,12 @@ class DatabaseManager(object):
         ''' reads in the initial database schema and creates all necessary tables
         Params: filename to load up. Default is the saved schema we already wrote
         '''
+        changes = 0
         with open(sql_filename, 'r') as schema:
             self.cursor.executescript(schema.read())  # catch 'em all
-        changes = self.commit()
+            changes = self.commit()
         logging.info('DatabaseManager: loaded schema {fn} successfully'.format(fn=sql_filename))
+        return changes
 
     def commit(self):
         ''' commits any pending changes and returns the total number of updated rows
@@ -85,11 +80,12 @@ class DatabaseManager(object):
         amt_changes = self.sql_conn.total_changes
         return amt_changes
 
-    def import_file_to_database(self, filename):
+    def import_file_to_database(self, filename, num_behaviors=3):
         '''
         Params: filename (string) the relative path of the file
         Return: none
         Will raise an exception or error if the data is already in the DB
+        To change the amount of behaviors in the file, change the param here.
         TODO: Exception handling for existing data
         '''
         if not os.path.isfile(filename):
@@ -120,8 +116,9 @@ class DatabaseManager(object):
         # 4. Iterate through rows and insert into Chunk
         timeseries = datasets[2]
         for record in timeseries.get_next_instance():
-            chunk_insert = "INSERT INTO Chunk values('{cid}','{sid}','{exp_time}','{b1}','{b2}','{b3}')".format(cid=timeseries.child_id, sid=timeseries.session_id, exp_time=record['TIME [SEC]'], b1=record['BEHAV 1 LEVEL'], b2=record['BEHAV 2 LEVEL'], b3=record['BEHAV 3 LEVEL'])
-            self.cursor.execute(chunk_insert)
+            for i in range(1, num_behaviors + 1):
+                chunk_insert = "INSERT INTO Chunk values('{cid}','{sid}','{exp_time}','{l}','{b}')".format(cid=timeseries.child_id, sid=timeseries.session_id, exp_time=record['TIME [SEC]'], l=i, b=record['BEHAV {i} LEVEL'.format(i=i)])
+                self.cursor.execute(chunk_insert)
         # if we've already loaded this file in, an IntegrityError will be raised
         changes = self.commit()
         if changes == 0:
@@ -283,5 +280,4 @@ class DatabaseManager(object):
             cond_qry += self.create_range_condition_query(range_conditions)
 
         qry = "SELECT " + aggr_command + "(" + column + ") " + "FROM " + table + cond_qry
-        print qry
         return self.execute_query(qry)
