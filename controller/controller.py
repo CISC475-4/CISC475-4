@@ -67,20 +67,9 @@ class Controller:
         '''
         returns a list of all columns from a given table
         '''
-        pass
+        return [info[1] for info in self.db.retrieve_db_info(tablename)] #info[1] is index of column name
 
-    #-----------
-    # Multiple session, one behavior analysis
-    #-----------
-    # TODO: implement method
-    def get_behavior_types(self):
-        '''
-        Get a list of all possible behavior types
-        return - list of strings (where the string represents the behavior)
-        '''
-        pass
 
-    # TODO: implement method
     def get_behavior_types_specific_to_session(self, child_id, session_id):
         '''
         Get a list of behavior types that appear in a specific session (useful 
@@ -89,46 +78,9 @@ class Controller:
         session_id - a string representing a session id
         return - list of strings (where the string represents the behavior)
         '''
+        # TODO: priority 0; write this method
         pass
 
-    # TODO: implement method
-    def get_behavior_data_from_session(self, behavior_id, child_id, session_id):
-        '''
-        Get data values for a behavior over the course of one session of a child
-        behavior_id - a string representing the behavior being selected
-        child_id- a string representing a child id
-        session_id - a string representing a session id
-        return - a list of values representing the behavior value over time
-        TODO: we may need to return the total time as well to be able to
-            figure out how long it is between behavior values
-        '''
-        # TODO: Get data from database
-        pass 
-
-
-
-    #-----------
-    # Single session, multiple behavior analysis
-    #-----------
-    # TODO: implement method
-    def get_all_child_ids(self):
-        '''
-        Get a list of child ids from the DB
-        return - a list of strings (where each string represents a child id)
-        '''
-        # TODO: Get data from database
-        pass
-
-    # TODO: implement method
-    def get_all_sessions_ids_for_child(self, child_id):
-        '''
-        Get a list of session ids from the DB given a child id
-        child_id - a string representing a child id
-        return - a list of strings (where each string represents a session id)
-        '''
-        # TODO: Get data from database
-        return [info[1] for info in self.db.retrieve_db_info(tablename)] #info[1] index of column name
-    
     def get_all_child_ids(self):
         '''
         Calls teh database to retrieve all unique child_ids 
@@ -196,7 +148,7 @@ class Controller:
         session_id - the session from which to retrieve the data
         returns the max chunk duration (chunk_max_dur) from a unique combo_index, child_id, session_id triple
         '''
-        column = 'chunk_avg_dur' 
+        column = 'chunk_max_dur' 
         table = 'GroupData'
         conditions = {
             'child_id' : child_id,
@@ -226,6 +178,7 @@ class Controller:
         TODO: Requires a join with the chunk table (top 3 behaviors)
         Retrieves the top behaviors for each combo/code
         '''
+        #TODO: this function
         pass
 
     ## DATA SPECIFIC TO CHUNK TABLE
@@ -367,17 +320,8 @@ class Controller:
             for behavior in behaviors: 
                 avg_val = self.db.query_aggregate(behavior, "Chunk", aggr_code, range_conditions, equality_conditions)
                 avg_behaviors += avg_val
-        
-        
-    def get_freq_occurence(self, behavior, level, child_id, session_id):
-        '''
-        behavior - String: a the name of the behavior to look for
-        level - the exact level of the behavior (ie, 0-4) 
-        Returns the frequency of a behavior occuring for some child_id and session_id
-        '''
-        #TODO: this function
-        pass
-
+        #TODO: fix later
+       return avg_val[0][0] 
 
     # TABLE SPECIFIC QUERIES
     def get_group_data(self, columns):
