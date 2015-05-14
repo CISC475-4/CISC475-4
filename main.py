@@ -49,6 +49,7 @@ def main():
     #max_behaviors = main_controller.get_max_behavior(['b3', 'b2'], '20274', 1)
     #max_behaviors_with_time = main_controller.ax_behavior(['b3', 'b2'], '20274', 1, 10, 15)
     #range_behaviors = main_controller.get_behaviors_for_child(['b1','b2','b3'], '20274', 1, 10, 15, True)
+    #nonrange_behaviors = main_controller.get_behaviors_for_child(['b1','b2','b3'], '20274', 1)
     #combo_indices = main_controller.get_all_combo_indexes('20274','1')
     #combo_data = main_controller.get_group_data_by_combo_index(['*'], 13, 20274, 1)
     #num_chunks = main_controller.get_num_chunks(13, 20274, 1)
