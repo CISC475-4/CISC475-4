@@ -5,6 +5,9 @@ To run:
 [CISC475-4] $ /usr/bin/env python2 -m unittest test.test_database[.class.function]
 
 Notice that the directory is the project directory, not testing/ or controller/
+
+TODO: Make it possible to run these tests from main.py. It should be similar to 
+importing unittest, telling it what to look at, and calling its main function.
 """
 
 from controller import database
@@ -23,6 +26,7 @@ class TestDatabase(unittest.TestCase):
 #	pass
 
     def test_connect(self):
+        """ asserts that the changes made in connect() take effect """
 	db = database.DatabaseManager(self.test_address)
 	sql_conn_orig = db.sql_conn
 	cursor_orig = db.cursor
@@ -75,3 +79,38 @@ class TestDatabase(unittest.TestCase):
 	self.assertRaises(IOError, db.import_file_to_database, 'fakeFileName')
 
         # Jamie's fixing this right now, so I'll do it later
+
+    def test_execute_query(self):
+        """ Note: This relies on other DatabaseManager functions """
+
+        test_Session = 'SELECT * FROM Session;'
+        test_Chunk = 'SELECT * FROM Chunk;'
+        test_GroupData = 'SELECT * FROM GroupData;'
+        test_SessionMeta = 'SELECT * FROM SessionMeta;'
+        
+        # db will use the DatabaseManager functions
+        db = database.DatabaseManager(self.test_address)
+        db.connect()
+        db.setup() # Set up schema/etc.
+        db.setup('tests/test_data.sql') # Insert test data into db
+        
+        # db_test will perform all the steps manually
+        db_test = database.DatabaseManager('')
+        db_test.connect()
+        db_test.setup()
+        db_test.setup('tests/test_data.sql')
+        db_test_cursor = db_test.sql_conn.cursor()
+
+        db_test_cursor.execute(test_Session)
+        assertListEqual(db_test_cursor.fetchall(), db.execute(test_Session))
+
+        db_test_cursor.execute(test_Chunk)
+        assertListEqual(db_test_cursor.fetchall(), db.execute(test_Chunk))
+
+        db_test_cursor.execute(test_GroupData)
+        assertListEqual(db_test_cursor.fetchall(), db.execute(test_GroupData))
+
+        db_test_cursor.execute(test_SessionMeta)
+        assertListEqual(db_test_cursor.fetchall(), db.execute(test_SessionMeta))
+
+        # TODO: Finish this method
