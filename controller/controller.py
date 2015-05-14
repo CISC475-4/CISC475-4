@@ -277,14 +277,13 @@ class Controller:
         
         return results
 
-    def get_max_behavior(self, behaviors, child_id, session_id=None, time_start=None, time_end=None):
+    def get_max_behavior(self, behavior, child_id, session_id=None, time_start=None, time_end=None):
         '''
-        behaviors - a list of behaviors to get the max value of given the child_
+        behaviors - a single behavior to be gotten the max of
         optional parameters may be used for more specific queries
         returns a list of max values cooresponding to the list of behaviors
         '''
         aggr_code = 0 #cooresponding to the code for max iaggregate command
-        max_behaviors = []
         equality_conditions = {"child_id": child_id}
 
         #build time constraints
@@ -301,27 +300,21 @@ class Controller:
         if session_id != None:
             equality_conditions['session_id'] = session_id
 
-        #requesting the query from database object
-        if type(behaviors) == type(list()):
-            for behavior in behaviors: 
-                max_val = self.db.query_aggregate(behavior, "Chunk", aggr_code, range_conditions, equality_conditions) 
-                max_behaviors += max_val
-        else:
-            #not handling behaviors that are not a list
-           logging.error("Controller: Incorrect argument to query database")
+        code = int(behavior.lstrip('b'))
+        equality_conditions['behavior_id'] = code
+        max_val = self.db.query_aggregate('behavior_lvl', "Chunk", aggr_code, range_conditions, equality_conditions) 
 
-        return max_behaviors
+        return max_val[0][0] # surrounded in a 1-tuple with a 1-list
         
 
-    def get_min_behavior(self, behaviors, child_id, session_id=None, time_start=None, time_end=None):
+    def get_min_behavior(self, behavior, child_id, session_id=None, time_start=None, time_end=None):
         '''
-        behaviors - a list of behaviors to get the max value of given the child_
+        behaviors - a single behavior to be gotten the max of
         optional parameters may be used for more specific queries
         returns a list of max values cooresponding to the list of behaviors
         '''
-        aggr_code = 1 #cooresponding to the code for max aggregate command
-        min_behaviors = []
-        condition = {"child_id", child_id}
+        aggr_code = 1 #cooresponding to the code for min aggregate command
+        equality_conditions = {"child_id": child_id}
 
         #build time constraints
         time_conditions = {}
@@ -335,17 +328,13 @@ class Controller:
         
         #non-default session_id
         if session_id != None:
-           condition['session_id'] = session_id         
+           equality_conditions['session_id'] = session_id
 
-        if type(behaviors) == type(list()):
-            for behavior in behaviors: 
-                min_val = self.db.query_aggregate(behavior, "Chunk", aggr_code, range_conditions, equality_conditions) 
-                min_behaviors += min_val
-        else:
-            #not handling behaviors that are not a list
-           logging.error("Controller: Incorrect argument to query database")
+        code = int(behavior.lstrip('b'))
+        equality_conditions['behavior_id'] = code
+        min_val = self.db.query_aggregate('behavior_lvl', "Chunk", aggr_code, range_conditions, equality_conditions) 
 
-        return min_behaviors
+        return min_val[0][0]
 
     def get_avg_behavior(self, behaviors, child_id, session_id=None, time_start=None, time_end=None):
         '''
