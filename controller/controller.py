@@ -275,7 +275,6 @@ class Controller:
                     r.append(group[0][2])
                 results.append(r)
         
-        #print results
         return results
 
     def get_max_behavior(self, behaviors, child_id, session_id=None, time_start=None, time_end=None):
