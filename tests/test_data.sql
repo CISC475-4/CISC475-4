@@ -41,7 +41,7 @@ insert into GroupData values (12345, 01, 111, 1.11, 1, 1.11, 1.11, 1.11, 1.11);
 --               time_loaded numeric(10) not null,
 --               time_modified numeric(10) not null,
 --               filename varchar(255) not null );
-insert into SessionMeta values (12345, 00, 12345, 12346, 'filename1.xls');
-insert into SessionMeta values (12345, 00, 22222, 33333, 'fn2.sql');
-insert into SessionMeta values (12345, 00, 21314, 51617, 'meta.meta');
-insert into SessionMeta values (12345, 01, 33333, 88888, 'information.xlsx');
+insert into Session_Meta values (12345, 00, 12345, 12346, 'filename1.xls');
+insert into Session_Meta values (12345, 00, 22222, 33333, 'fn2.sql');
+insert into Session_Meta values (12345, 00, 21314, 51617, 'meta.meta');
+insert into Session_Meta values (12345, 01, 33333, 88888, 'information.xlsx');

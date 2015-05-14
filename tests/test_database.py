@@ -86,7 +86,7 @@ class TestDatabase(unittest.TestCase):
         test_Session = 'SELECT * FROM Session;'
         test_Chunk = 'SELECT * FROM Chunk;'
         test_GroupData = 'SELECT * FROM GroupData;'
-        test_SessionMeta = 'SELECT * FROM SessionMeta;'
+        test_Session_Meta = 'SELECT * FROM Session_Meta;'
         
         # db will use the DatabaseManager functions
         db = database.DatabaseManager(self.test_address)
@@ -102,15 +102,19 @@ class TestDatabase(unittest.TestCase):
         db_test_cursor = db_test.sql_conn.cursor()
 
         db_test_cursor.execute(test_Session)
-        assertListEqual(db_test_cursor.fetchall(), db.execute(test_Session))
+        self.assertListEqual(db_test_cursor.fetchall(), 
+                             db.execute_query(test_Session))
 
         db_test_cursor.execute(test_Chunk)
-        assertListEqual(db_test_cursor.fetchall(), db.execute(test_Chunk))
+        self.assertListEqual(db_test_cursor.fetchall(), 
+                             db.execute_query(test_Chunk))
 
         db_test_cursor.execute(test_GroupData)
-        assertListEqual(db_test_cursor.fetchall(), db.execute(test_GroupData))
+        self.assertListEqual(db_test_cursor.fetchall(), 
+                             db.execute_query(test_GroupData))
 
-        db_test_cursor.execute(test_SessionMeta)
-        assertListEqual(db_test_cursor.fetchall(), db.execute(test_SessionMeta))
+        db_test_cursor.execute(test_Session_Meta)
+        self.assertListEqual(db_test_cursor.fetchall(), 
+                             db.execute_query(test_Session_Meta))
 
         # TODO: Finish this method
