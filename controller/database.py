@@ -246,6 +246,7 @@ class DatabaseManager(object):
         else:
             qry += 'WHERE '
         qry += self.create_range_condition_query(range_conditions) 
+        qry = qry.rstrip('AND ')
         return self.execute_query(qry)
 
     def query_aggregate(self, column, table, fn, range_conditions={}, equality_conditions={}):
