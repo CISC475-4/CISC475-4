@@ -61,7 +61,7 @@ class TestDatabase(unittest.TestCase):
     def test_check_db_setup(self):
         """ checks to see that (un)initialized dbs are recognized as such """
         # db_setup will check if a set-up db is accepted
-        db_setup = database.DatabaseManager('test')
+        db_setup = database.DatabaseManager('tests/test.sql')
 	db_setup.connect()
 	db_setup.setup()
 	self.assertTrue(db_setup.check_db_setup())
