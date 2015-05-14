@@ -3,6 +3,8 @@ import utility.file_utility
 import database
 import logging
 
+from os import listdir
+
 
 class Controller:
     """
@@ -67,7 +69,7 @@ class Controller:
         '''
         pass
 
-    # ----------
+    #-----------
     # Multiple session, one behavior analysis
     #-----------
     # TODO: implement method
@@ -257,10 +259,10 @@ class Controller:
             columns.append('behavior_lvl')
         # retrieve time column if requested
         if timestamps:
-            columns.append('time')
-            rows = self.db.query_range(sorted(columns), 'Chunk', range_conditions, equality_conditions)
+            behaviors.append('time')
+            return self.db.query_range(behaviors, 'Chunk', range_conditions, equality_conditions)
         else:
-            rows = self.db.query_multiple(sorted(columns), 'Chunk', equality_conditions)
+            return self.db.query_multiple(behaviors, 'Chunk', equality_conditions)
 
         results = []
         # the list comprehension in the next row does the following:
@@ -367,6 +369,15 @@ class Controller:
                 avg_behaviors += avg_val
         
         
+    def get_freq_occurence(self, behavior, level, child_id, session_id):
+        '''
+        behavior - String: a the name of the behavior to look for
+        level - the exact level of the behavior (ie, 0-4) 
+        Returns the frequency of a behavior occuring for some child_id and session_id
+        '''
+        #TODO: this function
+        pass
+
 
     # TABLE SPECIFIC QUERIES
     def get_group_data(self, columns):
