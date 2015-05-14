@@ -3,6 +3,8 @@ import utility.file_utility
 import database
 import logging
 
+from os import listdir
+
 
 class Controller:
     """
@@ -153,12 +155,6 @@ class Controller:
         }
         return self.db.query_single(column, table, conditions)
 
-    def get_freq_occurence(self, combo_index, child_id, session_id):
-        '''
-        TODO: Requires a join with the chunk table (top 3 behaviors)
-        Retrieves the top behaviors for each combo/code
-        '''
-         
 
     ## DATA SPECIFIC TO CHUNK TABLE
     def get_behaviors_for_child(self, behaviors, child_id, session_id=None, time_start=None, time_end=None, timestamps=None):
@@ -291,6 +287,15 @@ class Controller:
                 avg_behaviors += avg_val
         
         
+    def get_freq_occurence(self, behavior, level, child_id, session_id):
+        '''
+        behavior - String: a the name of the behavior to look for
+        level - the exact level of the behavior (ie, 0-4) 
+        Returns the frequency of a behavior occuring for some child_id and session_id
+        '''
+        #TODO: this function
+        pass
+
 
     # TABLE SPECIFIC QUERIES
     def get_group_data(self, columns):
