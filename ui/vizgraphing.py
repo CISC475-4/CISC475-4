@@ -22,10 +22,10 @@ class VizGraphing():
         self.init_graphs() 
 
     def init_graphs(self):
-        testdata = self.window.controller.get_behaviors_for_child(['b1'], '20274')
+        # testdata = self.window.controller.get_behaviors_for_child(['b1'], '20274')
         b1 = []
-        for i in testdata:
-            b1.append(i[0])
+        # for i in testdata:
+        #     b1.append(i[0])
 
         self.layout = QtGui.QVBoxLayout(self.window.main_widget)
         self.layout.setContentsMargins(0,0,0,0)
