@@ -86,7 +86,12 @@ class Controller:
         Calls teh database to retrieve all unique child_ids 
         returns a list of child_ids
         '''
-        return self.db.retrieve_distinct_by_name("child_id", "Session")
+        # query to get all the child ids
+        db_child_ids = self.db.retrieve_distinct_by_name("child_id", "Session")
+        # list comprehension to get child ids in list of ints format
+        #  (they are originally in a list of tuples (child_id, ) )
+        child_ids = [child_id[0] for child_id in db_child_ids]
+        return child_ids
 
     def get_all_sessions_for_child(self, child_id):
         '''
@@ -94,7 +99,11 @@ class Controller:
         returns a list of session_ids
         '''
         condition = {"child_id" : child_id }
-        return self.db.query_single("session_id", "Session", condition)
+        # query to get all session ids for a specified child id
+        db_session_ids = self.db.query_single("session_id", "Session", condition)
+        # list comprehesion to get session ids in a list of ints format
+        session_ids = [session_id[0] for session_id in db_session_ids]
+        return session_ids
 
     ## DATA SPECIFIC TO GROUPDATA TABLE
     def get_all_combo_indexes(self, child_id, session_id):
