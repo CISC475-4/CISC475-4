@@ -158,7 +158,13 @@ class DatabaseManager(object):
         qry = " WHERE "
         for pair in conditions.iteritems():
             # TODO: distinguish between numeric and non-numeric keys
-            qry += pair[0] + " = " + str(pair[1]) + " AND " # pair = (key, value)
+            if type(pair[1]) == type(list()): #To Allow Multiple values 
+                qry += '(' 
+                for value in pair[1]:
+                    qry += pair[0]  + ' = ' + str(value) + " OR "  
+                qry = qry.rstrip(' OR ') + ') AND '
+            else:
+                qry += pair[0] + " = " + str(pair[1]) + " AND " # pair = (key, value)
         qry = qry.rstrip(' AND ')
         return qry 
         
@@ -226,6 +232,7 @@ class DatabaseManager(object):
 
         if conditions != {}:
             qry += self.create_condition_query(conditions)
+        print qry
         return self.execute_query(qry) 
 
     def query_range(self, columns, table, range_conditions, equality_conditions={}):

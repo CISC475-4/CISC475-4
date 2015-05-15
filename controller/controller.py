@@ -182,6 +182,15 @@ class Controller:
         pass
 
     ## DATA SPECIFIC TO CHUNK TABLE
+    def get_behavior_types(self, child_id=None):
+        '''
+        returns the unique behavior_ids for all children
+        given a child_id, will return all unique behavior_ids for that child
+        '''
+        #TODO: this function
+        pass
+
+
     def get_behaviors_for_child(self, behaviors, child_id, session_id=None, time_start=None, time_end=None, timestamps=None):
         '''
         behaviors - a list of behaviors (column names)
@@ -210,27 +219,15 @@ class Controller:
         if bh_amt > 0:
             columns.append('behavior_id')
             columns.append('behavior_lvl')
+            #TODO: add the proper behaviors to condition 
+            equality_conditions['behavior_id'] = [bh.lstrip('b') for bh in behaviors]
+
         # retrieve time column if requested
         if timestamps:
-            behaviors.append('time')
-            return self.db.query_range(behaviors, 'Chunk', range_conditions, equality_conditions)
+            columns.append('time')
+            return self.db.query_range(columns, 'Chunk', range_conditions, equality_conditions)
         else:
-            return self.db.query_multiple(behaviors, 'Chunk', equality_conditions)
-
-        results = []
-        # the list comprehension in the next row does the following:
-        #   grabs a group of bh_amt consecutive list elements (corresponding to each behavior)
-        #   merges them into one list, returned as such
-        # [ b1, b2, b3... bn, time ]
-        # if there was time. If not, it's just the list
-        for group in [rows[bh_amt*i:bh_amt*i+bh_amt] for i in range(0, (len(rows)/bh_amt)+1)]:
-            if group != []:
-                r = [group[i][1] for i in range(len(group))]
-                if timestamps:
-                    r.append(group[0][2])
-                results.append(r)
-        
-        return results
+            return self.db.query_multiple(columns, 'Chunk', equality_conditions)
 
     def get_max_behavior(self, behavior, child_id, session_id=None, time_start=None, time_end=None):
         '''

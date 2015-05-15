@@ -5,10 +5,10 @@ Starting point for the application.
 """
 
 import sys
-from PySide import QtGui
+#from PySide import QtGui
 import logging
 from controller.controller import Controller
-from ui.mainui import MainScreen
+#from ui.mainui import MainScreen
 import argparse
 
 def main():
@@ -34,15 +34,20 @@ def main():
     if args.import_file:
         main_controller.import_file_to_database(args.import_file)
 
-    application = QtGui.QApplication(sys.argv)
+    #application = QtGui.QApplication(sys.argv)
     # Initialize the MainScreen (main window of the UI) and pass it our controller
-    this_screen = MainScreen(main_controller)
+    #this_screen = MainScreen(main_controller)
 
     ### This commented out code shows how perform a simple database query
 
     ### The following displays the current query repertoire
 
-    sys.exit(application.exec_())
+    # k's database testing stuff
+    #avg_bh = main_controller.get_avg_behavior('b1', 20274) #works
+    bh = main_controller.get_behaviors_for_child(['b1','b2'],20274,1)
+    print bh
+
+    #sys.exit(application.exec_())
 
 if __name__ == '__main__':
     main()
