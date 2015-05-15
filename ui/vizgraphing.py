@@ -47,14 +47,26 @@ class VizGraphing():
         self.window.main_widget.setFocus()
         self.window.setCentralWidget(self.window.main_widget)
 
-    def add_graph(self, behavior):
+    def add_graph(self, child_id, session_id, behavior_id):
+        behavior_data = self.window.controller.get_behaviors_for_child([behavior_id], child_id, session_id)
+        b = []
+        for i in behavior_data:
+            b.append(i[0])
+        self.add_graph(b)
+
+    def add_multisystem_graph(self, child_id, session_id):
+        #TODO
+        behavior_data = self.window.controller.get_behaviors_for_child([behavior_id], child_id, session_id)
+        self.add_graph(behavior_data)
+
+    def add_graph(self, behavior_data):
         bar_layout = QtGui.QHBoxLayout()
 
         btn = QtGui.QPushButton('X')
         #btn.clicked.connect(ChildLayout)
         bar_layout.addWidget(btn)
 
-        sc = ColorBarCanvas(behavior, self.window.main_widget, width=5, height=4, dpi=100)
+        sc = ColorBarCanvas(behavior_data, self.window.main_widget, width=5, height=4, dpi=100)
         sc.set_seek_slider(self.seek_slider)
         sc.set_zoom_slider(self.zoom_slider)
         bar_layout.addWidget(sc)
