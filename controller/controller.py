@@ -197,7 +197,7 @@ class Controller:
         given a child_id, will return all unique behavior_ids for that child
         '''
         #TODO: this function
-        pass
+        return self.db.retrieve_distinct_by_name('behavior_id', 'Chunk')
 
 
     def get_behaviors_for_child(self, behaviors, child_id, session_id=None, time_start=None, time_end=None, timestamps=None):
