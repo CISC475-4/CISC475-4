@@ -47,17 +47,28 @@ class VizGraphing():
         self.window.main_widget.setFocus()
         self.window.setCentralWidget(self.window.main_widget)
 
-    def add_graph(self, child_id, session_id, behavior_id):
+    def add_graph_with_ids(self, child_id, session_id, behavior_id):
         behavior_data = self.window.controller.get_behaviors_for_child([behavior_id], child_id, session_id)
         b = []
         for i in behavior_data:
-            b.append(i[0])
+            b.append(i[1])
         self.add_graph(b)
 
     def add_multisystem_graph(self, child_id, session_id):
-        #TODO
-        behavior_data = self.window.controller.get_behaviors_for_child([behavior_id], child_id, session_id)
-        self.add_graph(behavior_data)
+        ''' 
+        sum all behaviors into one
+        '''
+
+        #TODO remove hard coded numbers
+        behaviors = 3
+        behavior_data = self.window.controller.get_behaviors_for_child(['1','2','3'], child_id, session_id)
+        b = []
+        for i in range(0, len(behavior_data), behaviors):
+            total = 0
+            for pair in range(0, behaviors):
+                total += behavior_data[i + pair][1]
+            b.append(total)
+        self.add_graph(b)
 
     def add_graph(self, behavior_data):
         bar_layout = QtGui.QHBoxLayout()
