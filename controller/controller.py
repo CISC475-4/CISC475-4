@@ -196,8 +196,13 @@ class Controller:
         returns the unique behavior_ids for all children
         given a child_id, will return all unique behavior_ids for that child
         '''
-        #TODO: this function
-        return self.db.retrieve_distinct_by_name('behavior_id', 'Chunk')
+        equality_conditions = {}
+        if child_id != None:
+            equality_conditions['child_id'] = child_id
+
+        db_types = self.db.retrieve_distinct_by_name('behavior_id', 'Chunk', equality_conditions)
+        types = [typ[0] for typ in db_types]
+        return types
 
 
     def get_behaviors_for_child(self, behaviors, child_id, session_id=None, time_start=None, time_end=None, timestamps=None):

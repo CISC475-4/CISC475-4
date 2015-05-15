@@ -45,6 +45,7 @@ def main():
     # k's database testing stuff
     #avg_bh = main_controller.get_avg_behavior('b1', 20274) #works
     #bh = main_controller.get_behaviors_for_child(['b1','b2'],20274,1)
+    #types = main_controller.get_behavior_types(20274)
 
     sys.exit(application.exec_())
 

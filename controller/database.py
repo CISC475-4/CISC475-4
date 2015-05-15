@@ -198,12 +198,15 @@ class DatabaseManager(object):
             qry = "PRAGMA table_info(" + table + ")"
         return self.execute_query(qry)
 
-    def retrieve_distinct_by_name(self, column, table):
+    def retrieve_distinct_by_name(self, column, table, equality_condition={}):
         '''
         call the database to query for all unique values of a given column from the specified table
         ie: use to retrive all session_ids or child_ids from Session table
         '''
         qry = "SELECT DISTINCT " + column + " FROM " + table
+        if equality_condition != {}:
+            qry += self.create_condition_query(equality_condition)
+
         return self.execute_query(qry)
         
     def query_single(self, column, table, conditions={}):
@@ -232,7 +235,6 @@ class DatabaseManager(object):
 
         if conditions != {}:
             qry += self.create_condition_query(conditions)
-        print qry
         return self.execute_query(qry) 
 
     def query_range(self, columns, table, range_conditions, equality_conditions={}):
