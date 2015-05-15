@@ -291,16 +291,15 @@ class Controller:
 
         return min_val[0][0]
 
-    def get_avg_behavior(self, behaviors, child_id, session_id=None, time_start=None, time_end=None):
+    def get_avg_behavior(self, behavior, child_id, session_id=None, time_start=None, time_end=None):
         '''
-        behaviors - a list of behaviors to get the max value of given the child_
+        behaviors - a single behavior to be gotten the max of
         timestamps - (optional) set to True if you want to retrieve timestamps with each data instance
         optional parameters may be used for more specific queries
         returns a list of avg values cooresponding to the list of behaviors
         '''
         aggr_code = 3 #cooresponding to the code for max aggregate command
-        avg_behaviors = []
-        equality_conditions = {"child_id", child_id}
+        equality_conditions = {"child_id": child_id}
 
         #build time constraints
         time_conditions = {}
@@ -314,14 +313,13 @@ class Controller:
         
         #non-default session_id
         if session_id != None:
-           equality_conditions['session_id'] = session_id         
+           equality_conditions['session_id'] = session_id
 
-        if type(behaviors) == type(list()):
-            for behavior in behaviors: 
-                avg_val = self.db.query_aggregate(behavior, "Chunk", aggr_code, range_conditions, equality_conditions)
-                avg_behaviors += avg_val
-        #TODO: fix later
-       return avg_val[0][0] 
+        code = int(behavior.lstrip('b'))
+        equality_conditions['behavior_id'] = code
+        avg_val= self.db.query_aggregate('behavior_lvl', 'Chunk', aggr_code, range_conditions, equality_conditions)
+        return avg_val[0][0]
+
 
     # TABLE SPECIFIC QUERIES
     def get_group_data(self, columns):
