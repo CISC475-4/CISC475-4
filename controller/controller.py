@@ -204,6 +204,22 @@ class Controller:
         types = [typ[0] for typ in db_types]
         return types
 
+    #TODO: Hard-coded for submission & presentation. Code map should be handled properly.
+    def get_behavior_names(self, child_id=None):
+        '''
+        the same as get_behavior_types, but returns the mapping from numeric code to english
+        '''
+        mapping = {
+            1: 'Attention',
+            2: 'Affect',
+            3: 'Verbal'
+        }
+        codes = self.get_behavior_types(child_id)
+
+        type_names = [mapping[t] for t in codes]
+        return type_names
+        
+
 
     def get_behaviors_for_child(self, behaviors, child_id, session_id=None, time_start=None, time_end=None, timestamps=None):
         '''
@@ -233,7 +249,6 @@ class Controller:
         if bh_amt > 0:
             columns.append('behavior_id')
             columns.append('behavior_lvl')
-            #TODO: add the proper behaviors to condition 
             equality_conditions['behavior_id'] = [bh.lstrip('b') for bh in behaviors]
 
         # retrieve time column if requested
