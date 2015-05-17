@@ -81,7 +81,11 @@ class TestDatabase(unittest.TestCase):
         # Jamie's fixing this right now, so I'll do it later
 
     def test_execute_query(self):
-        """ Note: This relies on other DatabaseManager functions """
+        """ Note: This relies on other DatabaseManager functions 
+
+        This does almost exactly what execute_query does, so I guess there's
+        not much point to it.
+        """
 
         test_Session = 'SELECT * FROM Session;'
         test_Chunk = 'SELECT * FROM Chunk;'
@@ -117,4 +121,8 @@ class TestDatabase(unittest.TestCase):
         self.assertListEqual(db_test_cursor.fetchall(), 
                              db.execute_query(test_Session_Meta))
 
-        # TODO: Finish this method
+    def test_create_condition_query(self):
+        """ Tests for string equivalence, not database functionality """
+
+        # create_condition_query's parameter is a dictionary
+        pass
