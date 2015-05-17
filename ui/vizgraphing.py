@@ -42,7 +42,7 @@ class VizGraphing():
         b = []
         for i in behavior_data:
             b.append(i[1])
-        self.add_graph(b)
+        self.add_graph(b, child_id, session_id, behavior_id)
 
     def add_multisystem_graph(self, child_id, session_id):
         ''' 
@@ -58,27 +58,57 @@ class VizGraphing():
             for pair in range(0, behaviors):
                 total += behavior_data[i + pair][1]
             b.append(total)
-        self.add_graph(b)
+        self.add_graph(b, child_id, session_id, "1+2+3")
 
-    def add_graph(self, behavior_data):
+    def add_graph(self, behavior_data, child_id_label="N/A", session_id_label="N/A", behavior_label="N/A"):
+        
+        # Outer layout for graph
         bar_layout = QtGui.QHBoxLayout()
 
-        close_btn = QtGui.QPushButton('X')
-        bar_layout.addWidget(close_btn)
+        # add labels
+        label_layout = QtGui.QVBoxLayout()
+        child_id_label_qt = QtGui.QLabel('Child ID: %s' % child_id_label, self.window) 
+        session_id_label_qt = QtGui.QLabel('Session ID: %s' % session_id_label, self.window)
+        behavior_label_qt = QtGui.QLabel('Behavior(s): %s' % behavior_label, self.window)
 
+        label_layout.addWidget(child_id_label_qt)
+        label_layout.addWidget(session_id_label_qt)
+        label_layout.addWidget(behavior_label_qt)
+
+        bar_layout.addLayout(label_layout)
+        # add graph
         graph = ColorBarCanvas(behavior_data, self.window.main_widget, width=5, height=4, dpi=100)
         graph.set_seek_slider(self.seek_slider)
         graph.set_zoom_slider(self.zoom_slider)
         bar_layout.addWidget(graph)
+
+        # add close button
+        close_btn = QtGui.QPushButton('X')
+        bar_layout.addWidget(close_btn)
+
         self.layout.addLayout(bar_layout)
 
-        close_btn.clicked.connect(lambda: self.delete_graph(close_btn, graph))
+        # Delete functionality
+        close_btn.clicked.connect(
+            lambda: self.delete_graph(
+                close_btn, 
+                graph, 
+                [ 
+                    child_id_label_qt,
+                    session_id_label_qt,
+                    behavior_label_qt
+                ]
+            )
+        )
 
-    def delete_graph(self, close_btn, graph):
+    def delete_graph(self, close_btn, graph, labels):
         close_btn.hide()
         close_btn.deleteLater()
         graph.hide()
         graph.deleteLater()
+        for label in labels:
+            label.hide()
+            label.deleteLater()
 
 
 

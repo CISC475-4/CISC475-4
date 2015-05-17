@@ -1,6 +1,8 @@
 from PySide import QtGui, QtCore
 from PySide.QtCore import SIGNAL, SLOT
 
+COMBO_3_BEHAVIOR = "combo (1 + 2 + 3)"
+
 
 class AddGraphDialog(QtGui.QDialog):
 
@@ -100,7 +102,7 @@ class AddGraphDialog(QtGui.QDialog):
             self.on_child_id_change(self.child_ids[0]) 
 
         # TODO: get the behaviors dynamically
-        self.behaviors = ['1', '2', '3', 'combo (1 + 2 + 3)']
+        self.behaviors = ['1', '2', '3', COMBO_3_BEHAVIOR]
         self.combobox_behavior.addItems(self.behaviors)
 
     def ok_on_click(self):
@@ -108,7 +110,7 @@ class AddGraphDialog(QtGui.QDialog):
         session_id = self.combobox_session.currentText()
         behavior = self.combobox_behavior.currentText()
 
-        if behavior == 'combo (1 + 2 + 3)':
+        if behavior == COMBO_3_BEHAVIOR:
             self.parent().graph_area.add_multisystem_graph(child_id, session_id)
         else:
             self.parent().graph_area.add_graph_with_ids(child_id, session_id, behavior)
