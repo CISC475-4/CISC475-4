@@ -69,18 +69,6 @@ class Controller:
         '''
         return [info[1] for info in self.db.retrieve_db_info(tablename)] #info[1] is index of column name
 
-
-    def get_behavior_types_specific_to_session(self, child_id, session_id):
-        '''
-        Get a list of behavior types that appear in a specific session (useful 
-            if there are more behaviors available than appear in a specific session)
-        child_id- a string representing a child id
-        session_id - a string representing a session id
-        return - list of strings (where the string represents the behavior)
-        '''
-        # TODO: priority 0; write this method
-        pass
-
     def get_all_child_ids(self):
         '''
         Calls teh database to retrieve all unique child_ids 
@@ -182,28 +170,60 @@ class Controller:
         }
         return self.db.query_single(column, table, conditions)
 
-    def get_freq_occurence(self, combo_index, child_id, session_id):
+    def get_combo_scores(self, behavior, child_id, session_id):
         '''
-        TODO: Requires a join with the chunk table (top 3 behaviors)
-        Retrieves the top behaviors for each combo/code
+        behavior - a single behavior code (1,2...)
+        returns all the combo score with their time intervals for a given behavior, child_id, and session_id
         '''
         #TODO: this function
         pass
 
+    def get_freq_score_occurence(self, behavior, combo_score, child_id, session_id):
+        '''
+        Retrieves the frequency for some combo score
+        '''
+        #TODO: this function
+        pass
+
+    def get_avg_time_after_occurace(self, behavior, combo_score, child_id, session_id):
+        '''
+        returns the average time after which a certain combo_score occurs
+        '''
+        #TODO: this function
+        pass
+
+
     ## DATA SPECIFIC TO CHUNK TABLE
-    def get_behavior_types(self, child_id=None):
+    def get_behavior_types(self, child_id=None, session_id=None):
         '''
         returns the unique behavior_ids for all children
         given a child_id, will return all unique behavior_ids for that child
+        given a session_id, will return all unique behavior_ids for that session
         '''
         equality_conditions = {}
         if child_id != None:
             equality_conditions['child_id'] = child_id
+        if session_id != None:
+            equality_conditions['session_id'] = session_id
 
         db_types = self.db.retrieve_distinct_by_name('behavior_id', 'Chunk', equality_conditions)
         types = [typ[0] for typ in db_types]
         return types
 
+    #TODO: Mapping is hard-coded for submission & presentation. Code map should be handled properly.
+    def get_behavior_names(self, child_id=None):
+        '''
+        the same as get_behavior_types, but returns the mapping from numeric code to english
+        '''
+        mapping = {
+            1: 'Attention',
+            2: 'Affect',
+            3: 'Verbal'
+        }
+        codes = self.get_behavior_types(child_id)
+
+        type_names = [mapping[t] for t in codes]
+        return type_names
 
     def get_behaviors_for_child(self, behaviors, child_id, session_id=None, time_start=None, time_end=None, timestamps=None):
         '''
@@ -233,7 +253,6 @@ class Controller:
         if bh_amt > 0:
             columns.append('behavior_id')
             columns.append('behavior_lvl')
-            #TODO: add the proper behaviors to condition 
             equality_conditions['behavior_id'] = [bh.lstrip('b') for bh in behaviors]
 
         # retrieve time column if requested
