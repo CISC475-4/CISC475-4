@@ -125,6 +125,7 @@ class AddGraphDialog(QtGui.QDialog):
                   'gnuplot', 'gnuplot2', 'gist_ncar',
                   'nipy_spectral', 'jet', 'rainbow',
                   'gist_rainbow', 'hsv', 'flag', 'prism']
+
         self.combobox_color.addItems(colors)
 
         # get child ids from the DB

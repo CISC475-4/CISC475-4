@@ -96,9 +96,19 @@ class VizGraphing():
         graph.set_zoom_slider(self.zoom_slider)
         bar_layout.addWidget(graph)
 
+
+
+        button_layout = QtGui.QVBoxLayout()
+
         # add close button
         close_btn = QtGui.QPushButton('X')
-        bar_layout.addWidget(close_btn)
+        button_layout.addWidget(close_btn)
+
+        #add key button
+        key_btn = QtGui.QPushButton('Show Key')
+        button_layout.addWidget(key_btn)
+
+        bar_layout.addLayout(button_layout)
 
         self.layout.addLayout(bar_layout)
 
@@ -106,6 +116,7 @@ class VizGraphing():
         close_btn.clicked.connect(
             lambda: self.delete_graph(
                 close_btn, 
+                key_btn,
                 graph, 
                 [ 
                     child_id_label_qt,
@@ -115,9 +126,26 @@ class VizGraphing():
             )
         )
 
-    def delete_graph(self, close_btn, graph, labels):
+        key_btn.clicked.connect(lambda: self.show_key(min(behavior_data), max(behavior_data), color))
+
+    def show_key(self, min_val, max_val, color):
+        fig = pyplot.figure(figsize=(5,1))
+        fig.canvas.set_window_title('Key')
+        fig.canvas.toolbar.hide()
+        ax1 = fig.add_axes([0.05, 0.2, 0.9, 0.7])
+        cmap = pyplot.get_cmap(color)
+        norm = mpl.colors.Normalize(vmin=min_val, vmax=max_val)
+        cb1 = mpl.colorbar.ColorbarBase(ax1, cmap=cmap,
+            norm=norm,
+            orientation='horizontal')
+        cb1.set_cmap(color)
+        pyplot.show()
+
+    def delete_graph(self, close_btn, key_btn, graph, labels):
         close_btn.hide()
         close_btn.deleteLater()
+        key_btn.hide()
+        key_btn.deleteLater()
         graph.hide()
         graph.deleteLater()
         for label in labels:
