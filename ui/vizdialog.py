@@ -59,6 +59,13 @@ class AddGraphDialog(QtGui.QDialog):
         self.behavior_label = QtGui.QLabel('Behavior:', self)
 
         # ----------------------------------------------------------------------------
+        # color combobox
+        # ----------------------------------------------------------------------------
+        self.combobox_color = QtGui.QComboBox(self)
+        self.color_label = QtGui.QLabel('Graph Color:', self)
+
+
+        # ----------------------------------------------------------------------------
         # Ok Button
         # ----------------------------------------------------------------------------
 
@@ -96,6 +103,8 @@ class AddGraphDialog(QtGui.QDialog):
         self.vertical_layout.addWidget(self.combobox_session)
         self.vertical_layout.addWidget(self.behavior_label)
         self.vertical_layout.addWidget(self.combobox_behavior)
+        self.vertical_layout.addWidget(self.color_label)
+        self.vertical_layout.addWidget(self.combobox_color)
         self.vertical_layout.addStretch(1)
 
         self.setLayout(self.vertical_layout)
@@ -104,6 +113,20 @@ class AddGraphDialog(QtGui.QDialog):
         # ----------------------------------------------------------------------------
         # Data initialization
         # ----------------------------------------------------------------------------
+
+        colors = ['Blues', 'BuGn', 'BuPu',
+                  'GnBu', 'Greens', 'Greys', 'Oranges', 'OrRd',
+                  'PuBu', 'PuBuGn', 'PuRd', 'Purples', 'RdPu',
+                  'Reds', 'YlGn', 'YlGnBu', 'YlOrBr', 'YlOrRd',
+                  'afmhot', 'autumn', 'bone', 'cool', 'copper',
+                  'gist_heat', 'gray', 'hot', 'pink',
+                  'spring', 'summer', 'winter','gist_earth', 'terrain', 'ocean', 'gist_stern',
+                  'brg', 'CMRmap', 'cubehelix',
+                  'gnuplot', 'gnuplot2', 'gist_ncar',
+                  'nipy_spectral', 'jet', 'rainbow',
+                  'gist_rainbow', 'hsv', 'flag', 'prism']
+        self.combobox_color.addItems(colors)
+
         # get child ids from the DB
         child_ids_int = self.parent().controller.get_all_child_ids()
         # convert ids from int to str
@@ -126,14 +149,15 @@ class AddGraphDialog(QtGui.QDialog):
         child_id = self.combobox_child.currentText()
         session_id = self.combobox_session.currentText()
         behavior = self.combobox_behavior.currentText()
+        color = self.combobox_color.currentText()
 
         # Add the graph
         # If we want all behaviors together
         if behavior == COMBO_3_BEHAVIOR:
-            self.parent().graph_area.add_multisystem_graph(child_id, session_id)
+            self.parent().graph_area.add_multisystem_graph(child_id, session_id, color)
         # If only one specific behavior was selected
         else:
-            self.parent().graph_area.add_graph_with_ids(child_id, session_id, behavior)
+            self.parent().graph_area.add_graph_with_ids(child_id, session_id, behavior, color)
         # Close the dialog
         self.close()
     

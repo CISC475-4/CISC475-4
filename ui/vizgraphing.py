@@ -48,14 +48,14 @@ class VizGraphing():
         self.window.main_widget.setFocus()
         self.window.setCentralWidget(self.window.main_widget)
 
-    def add_graph_with_ids(self, child_id, session_id, behavior_id):
+    def add_graph_with_ids(self, child_id, session_id, behavior_id, color):
         behavior_data = self.window.controller.get_behaviors_for_child([behavior_id], child_id, session_id)
         b = []
         for i in behavior_data:
             b.append(i[1])
-        self.add_graph(b, child_id, session_id, behavior_id)
+        self.add_graph(b, child_id, session_id, behavior_id, color)
 
-    def add_multisystem_graph(self, child_id, session_id):
+    def add_multisystem_graph(self, child_id, session_id, color):
         ''' 
         sum all behaviors into one and display it as a graph
         '''
@@ -69,9 +69,9 @@ class VizGraphing():
             for pair in range(0, num_behaviors):
                 total += behavior_data[i + pair][1]
             b.append(total)
-        self.add_graph(b, child_id, session_id, 'multi system')
+        self.add_graph(b, child_id, session_id, 'multi system', color)
 
-    def add_graph(self, behavior_data, child_id_label="N/A", session_id_label="N/A", behavior_label="N/A"):
+    def add_graph(self, behavior_data, child_id_label="N/A", session_id_label="N/A", behavior_label="N/A", color="cool"):
         
         # Outer layout for graph
         bar_layout = QtGui.QHBoxLayout()
@@ -91,7 +91,7 @@ class VizGraphing():
 
         bar_layout.addLayout(label_layout)
         # add graph
-        graph = ColorBarCanvas(behavior_data, self.window.main_widget, width=5, height=4, dpi=100)
+        graph = ColorBarCanvas(behavior_data, color, self.window.main_widget, width=5, height=4, dpi=100)
         graph.set_seek_slider(self.seek_slider)
         graph.set_zoom_slider(self.zoom_slider)
         bar_layout.addWidget(graph)
@@ -152,8 +152,9 @@ class MyMplCanvas(FigureCanvas):
 # copied from http://matplotlib.org/examples/user_interfaces/embedding_in_qt4.html
 class ColorBarCanvas(MyMplCanvas):
 
-    def __init__(self, dataset, *args, **kwargs):
+    def __init__(self, dataset, color, *args, **kwargs):
         self.dataset = dataset
+        self.graph_color = color
         MyMplCanvas.__init__(self, *args, **kwargs)
 
     def set_seek_slider(self, seek_slider):
@@ -164,17 +165,18 @@ class ColorBarCanvas(MyMplCanvas):
         self.zoom_slider = zoom_slider
         self.zoom_slider.valueChanged.connect(self.redraw)
 
-    """Simple canvas with a sine plot."""
     def compute_initial_figure(self):
-        # The four colors in order from left to right
-        # cmap will hold the data
         data_min = min(self.dataset)
         data_max = max(self.dataset)
-        self.data_range = data_max - data_min + 1 # possible efficiency problem
+        self.data_range = data_max - data_min + 1 
         self.colors = []
+
+        color_map = mpl.cm.ScalarMappable(mpl.colors.Normalize(data_min, data_max))
+        color_map.set_cmap(self.graph_color)
+        
         for i in range(0, self.data_range):
-            #self.colors.append([0., .4, i / float(self.data_range)])
-            self.colors.append([i / float(self.data_range), 1 - (i / float(self.data_range)), .4])
+            color_tuple = color_map.to_rgba(i)
+            self.colors.append([color_tuple[0], color_tuple[1], color_tuple[2]])
 
         self.color_list = []
         for i in self.dataset: 
@@ -192,15 +194,13 @@ class ColorBarCanvas(MyMplCanvas):
                                    orientation='horizontal')
 
     def redraw(self):
-        window_size = 100 * (self.zoom_slider.value() / 10.0)
-        window_size = int(window_size)
+        zoom = self.zoom_slider.value()
+        seek = self.seek_slider.value()
+        total_len = len(self.color_list)
+        percent_viewed =  ((100 - zoom) / 100.0) ** 2
+        window_size = int(total_len * percent_viewed)
 
-        if window_size == 0:
-            window_size = 10
-        if window_size > len(self.color_list) or self.zoom_slider.value() == 99:
-            window_size = len(self.color_list)
-
-        window_start = int((len(self.color_list) - window_size) * self.seek_slider.value() / 99.0)
+        window_start = int((total_len - window_size) * (seek / 99.0))
         bounds = range(window_start, window_start + window_size)
         self.colorbar.boundaries = bounds
         self.draw()
