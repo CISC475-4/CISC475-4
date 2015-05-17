@@ -83,8 +83,7 @@ class MainScreen(QtGui.QMainWindow):
         print("Exported")
 
     def clear_database(self):   
-        print("Database NOT cleared")
-
+        self.controller.reset_db()
 # ----------------------------------------------------------------------------
 # Other functions
 # ----------------------------------------------------------------------------

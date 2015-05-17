@@ -2,6 +2,7 @@
 import utility.file_utility
 import database
 import logging
+import os
 
 from os import listdir
 
@@ -27,6 +28,16 @@ class Controller:
         # if the schema has already been loaded, don't perform the init operation
         if not self.db.check_db_setup():
             self.db.setup()
+
+    def reset_db(self):
+        """
+        Delete our current DB file and recreate our DB
+        """
+        print ("Database NOT cleared because this functionality is not implemented!")
+        # self.db.disconnect()
+        # os.remove("./data.sqlite3")
+        # self.db = database.DatabaseManager()
+        # self.db.setup()
 
     def import_file_to_database(self, filename):
         """
