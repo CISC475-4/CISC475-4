@@ -10,7 +10,6 @@ mpl.rcParams['backend.qt4']='PySide'
 from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
 from matplotlib import pyplot
-import random #included to create test data TODO remove when not used
 
 class VizGraphing():
     """
@@ -22,11 +21,6 @@ class VizGraphing():
         self.init_graphs() 
 
     def init_graphs(self):
-        # testdata = self.window.controller.get_behaviors_for_child(['b1'], '20274')
-        b1 = []
-        # for i in testdata:
-        #     b1.append(i[0])
-
         self.layout = QtGui.QVBoxLayout(self.window.main_widget)
         self.layout.setContentsMargins(0,0,0,0)
 
@@ -38,27 +32,54 @@ class VizGraphing():
         self.zoom_slider.setGeometry(30, 40, 100, 30)
         self.layout.addWidget(self.zoom_slider)
 
-        # btn = QtGui.QPushButton('Test Button', self.window.main_widget)
-        # btn.clicked.connect(lambda: self.add_graph(b1))
-        # self.layout.addWidget(btn)
-
         self.layout.addStretch()
 
         self.window.main_widget.setFocus()
         self.window.setCentralWidget(self.window.main_widget)
 
-    def add_graph(self, behavior):
+    def add_graph_with_ids(self, child_id, session_id, behavior_id):
+        behavior_data = self.window.controller.get_behaviors_for_child([behavior_id], child_id, session_id)
+        b = []
+        for i in behavior_data:
+            b.append(i[1])
+        self.add_graph(b)
+
+    def add_multisystem_graph(self, child_id, session_id):
+        ''' 
+        sum all behaviors into one
+        '''
+
+        #TODO remove hard coded numbers
+        behaviors = 3
+        behavior_data = self.window.controller.get_behaviors_for_child(['1','2','3'], child_id, session_id)
+        b = []
+        for i in range(0, len(behavior_data), behaviors):
+            total = 0
+            for pair in range(0, behaviors):
+                total += behavior_data[i + pair][1]
+            b.append(total)
+        self.add_graph(b)
+
+    def add_graph(self, behavior_data):
         bar_layout = QtGui.QHBoxLayout()
 
-        btn = QtGui.QPushButton('X')
-        #btn.clicked.connect(ChildLayout)
-        bar_layout.addWidget(btn)
+        close_btn = QtGui.QPushButton('X')
+        bar_layout.addWidget(close_btn)
 
-        sc = ColorBarCanvas(behavior, self.window.main_widget, width=5, height=4, dpi=100)
-        sc.set_seek_slider(self.seek_slider)
-        sc.set_zoom_slider(self.zoom_slider)
-        bar_layout.addWidget(sc)
+        graph = ColorBarCanvas(behavior_data, self.window.main_widget, width=5, height=4, dpi=100)
+        graph.set_seek_slider(self.seek_slider)
+        graph.set_zoom_slider(self.zoom_slider)
+        bar_layout.addWidget(graph)
         self.layout.addLayout(bar_layout)
+
+        close_btn.clicked.connect(lambda: self.delete_graph(close_btn, graph))
+
+    def delete_graph(self, close_btn, graph):
+        close_btn.hide()
+        close_btn.deleteLater()
+        graph.hide()
+        graph.deleteLater()
+
 
 
 
@@ -80,6 +101,7 @@ class MyMplCanvas(FigureCanvas):
         FigureCanvas.setSizePolicy(self,
                                    QtGui.QSizePolicy.Expanding,
                                    QtGui.QSizePolicy.Expanding)
+
         FigureCanvas.updateGeometry(self)
 
 
@@ -102,11 +124,8 @@ class ColorBarCanvas(MyMplCanvas):
     def compute_initial_figure(self):
         # The four colors in order from left to right
         # cmap will hold the data
-        #self.test_data = [int(10*random.random()) for i in xrange(10000)]
-        #self.test_data = range(0, 1000)
-        self.test_data = self.dataset
-        data_min = min(self.test_data)
-        data_max = max(self.test_data)
+        data_min = min(self.dataset)
+        data_max = max(self.dataset)
         self.data_range = data_max - data_min + 1 # possible efficiency problem
         self.colors = []
         for i in range(0, self.data_range):
@@ -114,14 +133,14 @@ class ColorBarCanvas(MyMplCanvas):
             self.colors.append([i / float(self.data_range), 1 - (i / float(self.data_range)), .4])
 
         self.color_list = []
-        for i in self.test_data: 
+        for i in self.dataset: 
             self.color_list.append(self.colors[i - data_min])
 
         self.cmap = mpl.colors.ListedColormap(self.color_list)
         self.cmap.set_over((1., 0., 0.))
         self.cmap.set_under((0., 0., 1.))
         # bounds will be the timestamps
-        bounds = range(0, len(self.test_data))
+        bounds = range(0, len(self.dataset))
         norm = mpl.colors.BoundaryNorm(bounds, self.cmap.N)
         self.colorbar = mpl.colorbar.ColorbarBase(self.axes, cmap=self.cmap,
                                    norm=norm,

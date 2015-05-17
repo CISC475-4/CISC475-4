@@ -108,9 +108,10 @@ class AddGraphDialog(QtGui.QDialog):
         session_id = self.combobox_session.currentText()
         behavior = self.combobox_behavior.currentText()
 
-        print (child_id, session_id, behavior)
-        # TODO: 
-        # self.parent.graph_area.add_graph()
+        if behavior == 'combo (1 + 2 + 3)':
+            self.parent().graph_area.add_multisystem_graph(child_id, session_id)
+        else:
+            self.parent().graph_area.add_graph_with_ids(child_id, session_id, behavior)
         self.close()
     
     def on_child_id_change(self, child_id):
