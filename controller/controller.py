@@ -2,8 +2,6 @@
 import utility.file_utility
 import database
 import logging
-import os
-
 from os import listdir
 
 
@@ -18,26 +16,29 @@ class Controller:
         Initializes the controller.  Creates an instance of the database.
         """
         self.db = database.DatabaseManager()
-        self.db.connect()  # this creates the cursor object
 
-    def setup_db(self):
-        """
-        TODO: write function header
-        """
-        # TODO: Answer why this can't be called in the DatabaseManager initialization
-        # if the schema has already been loaded, don't perform the init operation
-        if not self.db.check_db_setup():
-            self.db.setup()
+    def __enter__(self):
+        '''
+        This method enables us to use Controller in a 'with' clause
+        In doing so, we avoid timing errors when calling connect()
+        And also get to tear down the DB when the program is done executing
+        '''
+        self.db.connect()
+        return self
+
+    def __exit__(self, type, value, traceback):
+        '''
+        Tear down the DB before program exit. Prevents data inconsistencies
+        '''
+        self.db.disconnect()
 
     def reset_db(self):
         """
         Delete our current DB file and recreate our DB
         """
-        print ("Database NOT cleared because this functionality is not implemented!")
-        # self.db.disconnect()
-        # os.remove("./data.sqlite3")
-        # self.db = database.DatabaseManager()
-        # self.db.setup()
+        self.db.clear()
+        self.db.disconnect()
+        self.db.connect()
 
     def import_file_to_database(self, filename):
         """

@@ -24,14 +24,22 @@ class DatabaseManager(object):
 
     def connect(self):
         ''' inits the cursor and sql_conn objects
-        Should only be called once per program run
+        May be called multiple times per program run, but
+        only if disconnect() was called first
         '''
-        self.sql_conn = sqlite3.connect(self.address)
+        if self.sql_conn is not None:
+            logging.error('DatabaseManager: called connect() on a connected DB!')
+            return
+        self.sql_conn = sqlite3.connect(self.address, timeout=self.timeout)
         # Makes the output from cursor.fetch*() into 'Row' objects (like dicts)
         self.sql_conn.row_factory = sqlite3.Row
         # Use bytestrings instead of Unicode in the results
         self.sql_conn.text_factory = str
         self.cursor = self.sql_conn.cursor()
+        # if the schema has already been loaded, don't perform the init operation
+        logging.info('DatabaseManager: connected to DB')
+        if not self.check_db_setup():
+            self.setup()
 
     def disconnect(self):
         ''' removes the connection to the database
@@ -40,35 +48,43 @@ class DatabaseManager(object):
         self.sql_conn.commit()
         self.sql_conn.close()
         self.cursor = None
+        self.sql_conn = None
+        logging.info('DatabaseManager: closed DB connection')
 
     def check_db_setup(self):
         ''' check to make sure that all tables exist in the database already
         Return: bool. True if the database has already been setup
         '''
-        temp_conn = sqlite3.connect(self.address)
-        temp_conn.text_factory = str
-        temp_cur = temp_conn.cursor()
         existence = True
         tablenames = ['Chunk', 'Session', 'GroupData', 'Session_Meta']
         for table in tablenames:
-            temp_cur.execute("SELECT name FROM sqlite_master WHERE type='table' and name='{tbl}'".format(tbl=table))
-            potential = temp_cur.fetchone()
+            self.cursor.execute("SELECT name FROM sqlite_master WHERE type='table' and name='{tbl}'".format(tbl=table))
+            potential = self.cursor.fetchone()
             if potential is not None:
                 existence = (potential[0] == table)  # if the 'Chunk' table exists, it is set up
             else:
                 existence = False
-        temp_conn.close()
+        logging.info('DatabaseManager: check_db_setup returned {e}'.format(e=existence))
         return existence
 
     def setup(self, sql_filename='controller/schemata/main.sql'):
         ''' reads in the initial database schema and creates all necessary tables
         Params: filename to load up. Default is the saved schema we already wrote
+        Cursor must exist in order to do this operation
         '''
         changes = 0
         with open(sql_filename, 'r') as schema:
             self.cursor.executescript(schema.read())  # catch 'em all
             changes = self.commit()
         logging.info('DatabaseManager: loaded schema {fn} successfully'.format(fn=sql_filename))
+        return changes
+
+    def clear(self):
+        tablenames = ['Chunk', 'Session', 'GroupData', 'Session_Meta']
+        for table in tablenames:
+            self.cursor.execute('DELETE FROM {n}'.format(n=table))
+        changes = self.commit()
+        logging.info('DatabaseManager: truncated all tables with {n} changes'.format(n=changes))
         return changes
 
     def commit(self):
@@ -100,7 +116,6 @@ class DatabaseManager(object):
         else:
             raise IOError("Incorrect file type! Expected .csv or .xls")
 
-        cur = self.connect()
         # iterate through dataset rows and insert
         # 1. Insert new row in Session
         allgroup = datasets[0]  # all group data goes here
