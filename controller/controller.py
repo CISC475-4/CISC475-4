@@ -207,7 +207,7 @@ class Controller:
             equality_conditions['session_id'] = session_id
 
         db_types = self.db.retrieve_distinct_by_name('behavior_id', 'Chunk', equality_conditions)
-        types = [typ[0] for typ in db_types]
+        types = [str(typ[0]) for typ in db_types]
         return types
 
     #TODO: Mapping is hard-coded for submission & presentation. Code map should be handled properly.

@@ -2,7 +2,7 @@ from PySide import QtGui, QtCore
 from PySide.QtCore import SIGNAL, SLOT
 
 # Constant
-COMBO_3_BEHAVIOR = "combo (1 + 2 + 3)"
+COMBO_3_BEHAVIOR = "Multi System"
 
 
 class AddGraphDialog(QtGui.QDialog):
@@ -44,6 +44,8 @@ class AddGraphDialog(QtGui.QDialog):
 
         # session combobox
         self.combobox_session = QtGui.QComboBox(self)
+        self.combobox_session.activated.connect(lambda: self.on_session_id_change(self.combobox_child.currentText(),
+            self.combobox_session.currentText()))
         # session label
         self.session_label = QtGui.QLabel('Session:', self)
 
@@ -111,10 +113,10 @@ class AddGraphDialog(QtGui.QDialog):
         # set the session id based on the first child id
         if len(self.child_ids) > 0:
             self.on_child_id_change(self.child_ids[0]) 
+            # set the behaviors based on child_id and session_id
+            if len(self.session_ids) > 0:
+                self.on_session_id_change(self.child_ids[0], self.session_ids[0])
 
-        # TODO: get the behaviors dynamically
-        self.behaviors = ['1', '2', '3', COMBO_3_BEHAVIOR]
-        self.combobox_behavior.addItems(self.behaviors)
 
     def ok_on_click(self):
         """
@@ -145,4 +147,10 @@ class AddGraphDialog(QtGui.QDialog):
         self.session_ids = [str(session_id) for session_id in session_ids_int]
         self.combobox_session.clear()
         self.combobox_session.addItems(self.session_ids)
+
+    def on_session_id_change(self, child_id, session_id):
+        self.behaviors = self.parent().controller.get_behavior_types(child_id, session_id)
+        self.behaviors.append(COMBO_3_BEHAVIOR)
+        self.combobox_behavior.clear()
+        self.combobox_behavior.addItems(self.behaviors)
 

@@ -24,13 +24,24 @@ class VizGraphing():
         self.layout = QtGui.QVBoxLayout(self.window.main_widget)
         self.layout.setContentsMargins(0,0,0,0)
 
+        seek_layout = QtGui.QHBoxLayout(self.window.main_widget)
         self.seek_slider = QtGui.QSlider(QtCore.Qt.Horizontal, self.window.main_widget)
         self.seek_slider.setGeometry(30, 40, 100, 30)
-        self.layout.addWidget(self.seek_slider)
 
+        seek_label = QtGui.QLabel(' Seek\t', self.window)
+
+        seek_layout.addWidget(seek_label)
+        seek_layout.addWidget(self.seek_slider)
+        self.layout.addLayout(seek_layout)
+
+        zoom_layout = QtGui.QHBoxLayout(self.window.main_widget)
         self.zoom_slider = QtGui.QSlider(QtCore.Qt.Horizontal, self.window.main_widget)
         self.zoom_slider.setGeometry(30, 40, 100, 30)
-        self.layout.addWidget(self.zoom_slider)
+        zoom_label = QtGui.QLabel(' Zoom\t', self.window)
+
+        zoom_layout.addWidget(zoom_label)
+        zoom_layout.addWidget(self.zoom_slider)
+        self.layout.addLayout(zoom_layout)
 
         self.layout.addStretch()
 
@@ -46,19 +57,19 @@ class VizGraphing():
 
     def add_multisystem_graph(self, child_id, session_id):
         ''' 
-        sum all behaviors into one
+        sum all behaviors into one and display it as a graph
         '''
 
-        #TODO remove hard coded numbers
-        behaviors = 3
-        behavior_data = self.window.controller.get_behaviors_for_child(['1','2','3'], child_id, session_id)
+        behaviors = self.window.controller.get_behavior_types(child_id, session_id)
+        num_behaviors = len(behaviors)
+        behavior_data = self.window.controller.get_behaviors_for_child(behaviors, child_id, session_id)
         b = []
-        for i in range(0, len(behavior_data), behaviors):
+        for i in range(0, len(behavior_data), num_behaviors):
             total = 0
-            for pair in range(0, behaviors):
+            for pair in range(0, num_behaviors):
                 total += behavior_data[i + pair][1]
             b.append(total)
-        self.add_graph(b, child_id, session_id, "1+2+3")
+        self.add_graph(b, child_id, session_id, 'multi system')
 
     def add_graph(self, behavior_data, child_id_label="N/A", session_id_label="N/A", behavior_label="N/A"):
         
@@ -69,7 +80,10 @@ class VizGraphing():
         label_layout = QtGui.QVBoxLayout()
         child_id_label_qt = QtGui.QLabel('Child ID: %s' % child_id_label, self.window) 
         session_id_label_qt = QtGui.QLabel('Session ID: %s' % session_id_label, self.window)
-        behavior_label_qt = QtGui.QLabel('Behavior(s): %s' % behavior_label, self.window)
+        if behavior_label == 'multi system':
+            behavior_label_qt = QtGui.QLabel('Multi System', self.window)
+        else:
+            behavior_label_qt = QtGui.QLabel('Behavior(s): %s' % behavior_label, self.window)
 
         label_layout.addWidget(child_id_label_qt)
         label_layout.addWidget(session_id_label_qt)
