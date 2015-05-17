@@ -1,11 +1,16 @@
 from PySide import QtGui, QtCore
 from PySide.QtCore import SIGNAL, SLOT
 
+# Constant
 COMBO_3_BEHAVIOR = "combo (1 + 2 + 3)"
 
 
 class AddGraphDialog(QtGui.QDialog):
+    """
+    The UI class for the dialog box used to add a graph.
+    """
 
+    # Lists to hold the options for the comboboxes
     child_ids = []
     session_ids = []
     behaviors = []
@@ -15,28 +20,30 @@ class AddGraphDialog(QtGui.QDialog):
         self.setup()
 
     def setup(self):
+        """
+        Code to setup the initial add graph dialog
+        """
 
-        # set title
+        # set title of the dialog
         self.setWindowTitle('Add Graph')
 
         # ----------------------------------------------------------------------------
         # child id combobox
         # ----------------------------------------------------------------------------
         
-        # child choicebox
+        # child combobox
         self.combobox_child = QtGui.QComboBox(self)
-        # attach handler for when child id combobox is changed
+        # attach handler to be called when child id combobox is changed
         self.combobox_child.activated[str].connect(self.on_child_id_change)
-        # combobox label
+        # child id combobox label
         self.child_label = QtGui.QLabel('Child:', self)
 
         # ----------------------------------------------------------------------------
         # session id combobox
         # ----------------------------------------------------------------------------
 
-        # session choicebox
+        # session combobox
         self.combobox_session = QtGui.QComboBox(self)
-        # self.combobox_session.addItems(self.spam_list)
         # session label
         self.session_label = QtGui.QLabel('Session:', self)
 
@@ -55,6 +62,7 @@ class AddGraphDialog(QtGui.QDialog):
 
         # ok button
         self.ok_button = QtGui.QPushButton('OK', self)
+        # attach event handler to the ok button
         self.ok_button.clicked.connect(self.ok_on_click)
 
         # ----------------------------------------------------------------------------
@@ -62,13 +70,15 @@ class AddGraphDialog(QtGui.QDialog):
         # ----------------------------------------------------------------------------
 
         # cancel button
-        self.cancel_button = QtGui.QPushButton('Cancel', self)        
+        self.cancel_button = QtGui.QPushButton('Cancel', self)
+        # attach event handler to close the dialog when the cancel button is clicked        
         self.cancel_button.clicked.connect(self.close)
 
         # ----------------------------------------------------------------------------
         # Layout
         # ----------------------------------------------------------------------------
 
+        # Setup the buttons section
         self.horizontal_layout = QtGui.QHBoxLayout()
         self.horizontal_layout.addStretch(1)
         self.horizontal_layout.addWidget(self.ok_button)
@@ -76,14 +86,15 @@ class AddGraphDialog(QtGui.QDialog):
 
         # add vertical layout
         self.vertical_layout = QtGui.QVBoxLayout()
-        self.vertical_layout.addStretch(1)
-
+        
+        # Setup the main content of the dialog box
         self.vertical_layout.addWidget(self.child_label)
         self.vertical_layout.addWidget(self.combobox_child)
         self.vertical_layout.addWidget(self.session_label)
         self.vertical_layout.addWidget(self.combobox_session)
         self.vertical_layout.addWidget(self.behavior_label)
         self.vertical_layout.addWidget(self.combobox_behavior)
+        self.vertical_layout.addStretch(1)
 
         self.setLayout(self.vertical_layout)
         self.vertical_layout.addLayout(self.horizontal_layout)     
@@ -106,19 +117,28 @@ class AddGraphDialog(QtGui.QDialog):
         self.combobox_behavior.addItems(self.behaviors)
 
     def ok_on_click(self):
+        """
+        Steps to be performed when the okay button is clicked
+        """
+        # Get the values from the comboboxes
         child_id = self.combobox_child.currentText()
         session_id = self.combobox_session.currentText()
         behavior = self.combobox_behavior.currentText()
 
+        # Add the graph
+        # If we want all behaviors together
         if behavior == COMBO_3_BEHAVIOR:
             self.parent().graph_area.add_multisystem_graph(child_id, session_id)
+        # If only one specific behavior was selected
         else:
             self.parent().graph_area.add_graph_with_ids(child_id, session_id, behavior)
+        # Close the dialog
         self.close()
     
     def on_child_id_change(self, child_id):
         """
-        Called when the child id combobox value changes
+        Called when the child id combobox value changes.  Sets the session id combobox 
+        appropriately.
         """
         # query the db for the session ids
         session_ids_int = self.parent().controller.get_all_sessions_for_child(child_id)
