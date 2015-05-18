@@ -6,4 +6,6 @@ whole project is written in Python.
 
 For more information, consult the documentation and comments in the source code.
 
-To run the application, double-click on the "run" file in this directory.
+To run the application, double-click on the "run" file in this directory, or
+use the following command in Terminal.app while in the project directory:
+    $ /usr/bin/env python2 main.py
