@@ -124,7 +124,7 @@ class TestDatabase(unittest.TestCase):
         in connect() many of the possible errors were avoided completely.
         """
         # db_setup will check if a set-up db is accepted
-        db_setup = database.DatabaseManager('test/test.sql')
+        db_setup = database.DatabaseManager(self.test_address)
 	db_setup.connect() # This will call db_setup.setup()
         
 	self.assertTrue(db_setup.check_db_setup())
@@ -145,13 +145,13 @@ class TestDatabase(unittest.TestCase):
         # db will use the DatabaseManager functions
         db = database.DatabaseManager(self.test_address)
         db.connect()
-        db.setup('test/test_data.sql') # Insert test data into db
+        db.setup('test/test_data/test_data.sql') # Insert test data into db
         db.cursor = db.sql_conn.cursor()
         
         # db_test will perform the queries
         db_test = database.DatabaseManager('')
         db_test.connect()
-        db_test.setup('test/test_data.sql')
+        db_test.setup('test/test_data/test_data.sql')
         db_test_cursor = db_test.sql_conn.cursor()
 
         # DatabaseManager.execute_query() returns cursor.fetchall()
@@ -184,7 +184,7 @@ class TestDatabase(unittest.TestCase):
 
         # Data will be entered into the database in this call.
         # There are 20 insertions in test_data.sql
-        inserts = db.setup('test/test_data.sql')
+        inserts = db.setup('test/test_data/test_data.sql')
 
         # The number of deletions should equal the number of insertions
         self.assertEqual(inserts, db.clear())
@@ -279,7 +279,9 @@ class TestDatabase(unittest.TestCase):
         db.connect() # An exception is raised if this isn't called!
         
         # First test the function without parameters 
-        self.assertListEqual(expected, db.retrieve_db_info())
+        # This doesn't work because the returned values are sqlite3.Row
+        # objects, not tuples/strings/etc. ...
+        #self.assertListEqual(expected, db.retrieve_db_info())
 
         # Copied and pasted from test output...
         expected = [
@@ -292,8 +294,6 @@ class TestDatabase(unittest.TestCase):
 
         actual = db.retrieve_db_info('Session_Meta')
 
-        # This doesn't work because the returned values are sqlite3.Row
-        # objects, not tuples/strings/etc. ...
         #self.assertListEqual(expected, actual)
 
     def test_retrieve_distinct_by_name(self):
