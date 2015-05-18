@@ -3,11 +3,23 @@
 """
 To run:
 [CISC475-4] $ /usr/bin/env python2 -m unittest test.test_database[.class.function]
+or:
+[CISC475-4] $ nosetests --exe
 
-Notice that the directory is the project directory, not testing/ or controller/
+Notice that the directory is the project directory, not test/ or controller/
 
 TODO: Make it possible to run these tests from main.py. It should be similar to 
 importing unittest, telling it what to look at, and calling its main function.
+
+The tests within this file are written using the unittest framework, but they
+will be run using the nose library. nose is much more feature-rich than 
+unittest. I'd like for it to be used in cooperation with the coverage library.
+
+I think it should be noted that, in general, it's a bad idea to directly use
+input in SQL queries/etc.. sqlite3 has a format for escaping parameters; I think
+we should be using it. (Instead of `'DELETE FROM {n}'.format(n=table)`, we
+should be using `'DELETE FROM ?'` and binding the needed parameter elsewhere in
+a call to cursor.execute().
 """
 
 from controller import database
@@ -16,7 +28,11 @@ import sqlite3  # Doesn't get imported when controller.database is imported
 import logging
 
 class TestDatabase(unittest.TestCase):
-    """Test the functions in the DatabaseManager class."""
+    """Test the functions in the DatabaseManager class.
+    With the exception of test___init__, all function names in this class will 
+    be of the form test_F, where F is the name of a function from 
+    controller/database.py to be tested.
+    """
 
     # This is here so these dbs don't connect to the same or default db
     test_address = ''
@@ -25,15 +41,45 @@ class TestDatabase(unittest.TestCase):
 #        """initializes data necessary to test database functionality"""
 #	pass
 
+    def test___init__(self):
+        """asserts expected behavior of DatabaseManager initializations"""
+        db = database.DatabaseManager(self.test_address)
+
+        self.assertEqual(self.test_address, db.address)
+        self.assertIsNone(db.sql_conn)
+        self.assertIsNone(db.cursor)
+
     def test_connect(self):
-        """ asserts that the changes made in connect() take effect """
+        """ """
+        # First case: see if having a set sql_conn variable returns None
+        db_connected = database.DatabaseManager(self.test_address)
+        db_connected.sql_conn = 'connection.sql' # It wouldn't be a str normally
+        self.assertIsNone(db_connected.connect())
+
+        # This shouldn't really be possible anyway, but if sql_conn is set up
+        # properly, these non-default options still shouldn't have been set
+        if type(db_connected.sql_conn) == sqlite3.Connection:
+            # Some of the few things changed in connect()
+            self.assertNotEqual(db_connected.sql_conn.row_factory, sqlite3.Row)
+            self.assertNotEqual(db_connected.sql_conn.text_factory, str)
+
+        # Second case: make sure all variables are updated properly
 	db = database.DatabaseManager(self.test_address)
 	sql_conn_orig = db.sql_conn
 	cursor_orig = db.cursor
+        # Without a valid sql_conn, db has no cursor, so this should fail
+        # I think this should be caught in DatabaseManager. Just do an
+        # `if self.cursor: ` before the execute line to make sure the cursor
+        # exists.
+        self.assertRaises(AttributeError, db.check_db_setup)
+        # This should evaluate to False anyway. Setting it for now since I think
+        # the above method should just return False or raise its own Exception
+        was_setup_orig = False
 	db.connect()
 
-	self.assertFalse(sql_conn_orig == db.sql_conn)
-	self.assertFalse(cursor_orig == db.cursor)
+	self.assertNotEqual(sql_conn_orig, db.sql_conn)
+	self.assertNotEqual(cursor_orig, db.cursor)
+        self.assertNotEqual(was_setup_orig, db.check_db_setup())
 	self.assertEqual(db.sql_conn.text_factory, str)
 	self.assertEqual(db.sql_conn.row_factory, sqlite3.Row)
 
@@ -41,7 +87,9 @@ class TestDatabase(unittest.TestCase):
         db = database.DatabaseManager(self.test_address)
 	db.connect()
         db.disconnect()
+
         self.assertIsNone(db.cursor)
+        self.assertIsNone(db.sql_conn)
     
     def test_setup(self):
         db_setup = database.DatabaseManager(self.test_address)
@@ -53,38 +101,40 @@ class TestDatabase(unittest.TestCase):
         self.assertTrue(db_setup.check_db_setup())
 
         # Database that tries to import a file that doesn't exist
+        # There's actually no way to call setup() with a parameter in the
+        # code at the moment, so maybe this isn't a problem.
 	db_bad_fname = database.DatabaseManager(self.test_address)
-	db_bad_fname.connect()
+        # Need to reproduct DatabaseManager.connect() here since it now calls
+        # setup() itself                                              #
+        db_bad_fname.sql_conn = sqlite3.connect(db_bad_fname.address, #
+                                                db_bad_fname.timeout) #
+        db_bad_fname.sql_conn.text_factory = sqlite3.Row              #
+        db_bad_fname.sql_conn.text_factory = str                      #
+        db_bad_fname.cursor = db_bad_fname.sql_conn.cursor()          #
+
+        # Without setup() having been called, there will be nothing in the
+        # database. Thus, both of the following assert statements should work
 	self.assertRaises(IOError, db_bad_fname.setup, 'fileThatDoesntExist')
+        # This will fail because connect() calls setup() now.
         self.assertFalse(db_bad_fname.check_db_setup())
 
     def test_check_db_setup(self):
-        """ checks to see that (un)initialized dbs are recognized as such """
+        """ checks to see that (un)initialized dbs are recognized as such 
+        There used to be more testing here, but with the addition of setup()
+        in connect() many of the possible errors were avoided completely.
+        """
         # db_setup will check if a set-up db is accepted
-        db_setup = database.DatabaseManager('tests/test.sql')
-	db_setup.connect()
-	db_setup.setup()
+        db_setup = database.DatabaseManager('test/test.sql')
+	db_setup.connect() # This will call db_setup.setup()
+        
 	self.assertTrue(db_setup.check_db_setup())
+        
         db_setup.disconnect()
 
-        # db_not_setup will test to see that uninitialized dbs aren't accepted
-        # Different name so the dbs in this function are definitely different
-	db_not_setup = database.DatabaseManager('')
-        db_not_setup.connect()
-        # don't call db_not_setup.setup()
-	self.assertFalse(db_not_setup.check_db_setup()) 
-
-    def test_import_file_to_database(self):
-        db = database.DatabaseManager(self.test_address)
-	self.assertRaises(IOError, db.import_file_to_database, 'fakeFileName')
-
-        # Jamie's fixing this right now, so I'll do it later
-
     def test_execute_query(self):
-        """ Note: This relies on other DatabaseManager functions 
-
-        This does almost exactly what execute_query does, so I guess there's
-        not much point to it.
+        """ 
+        Note: This relies on other DatabaseManager functions. If those functions
+        are also failing tests, check for errors there first.
         """
 
         test_Session = 'SELECT * FROM Session;'
@@ -95,16 +145,16 @@ class TestDatabase(unittest.TestCase):
         # db will use the DatabaseManager functions
         db = database.DatabaseManager(self.test_address)
         db.connect()
-        db.setup() # Set up schema/etc.
-        db.setup('tests/test_data.sql') # Insert test data into db
+        db.setup('test/test_data.sql') # Insert test data into db
+        db.cursor = db.sql_conn.cursor()
         
-        # db_test will perform all the steps manually
+        # db_test will perform the queries
         db_test = database.DatabaseManager('')
         db_test.connect()
-        db_test.setup()
-        db_test.setup('tests/test_data.sql')
+        db_test.setup('test/test_data.sql')
         db_test_cursor = db_test.sql_conn.cursor()
 
+        # DatabaseManager.execute_query() returns cursor.fetchall()
         db_test_cursor.execute(test_Session)
         self.assertListEqual(db_test_cursor.fetchall(), 
                              db.execute_query(test_Session))
@@ -121,8 +171,104 @@ class TestDatabase(unittest.TestCase):
         self.assertListEqual(db_test_cursor.fetchall(), 
                              db.execute_query(test_Session_Meta))
 
+        db.disconnect()
+        db_test.disconnect()
+
+    def test_clear(self):
+        """
+        Note: I think clear's implementation could be better. Should tablenames
+        be hardcoded into the function?
+        """
+        db = database.DatabaseManager()
+        db.connect() 
+
+        # Data will be entered into the database in this call.
+        # There are 20 insertions in test_data.sql
+        inserts = db.setup('test/test_data.sql')
+
+        # The number of deletions should equal the number of insertions
+        self.assertEqual(inserts, db.clear())
+
+    def test_commit(self):
+        """
+        Note: This relies on other DatabaseManager functions. If this test
+        fails, see if those functions are failing, too, as their failures 
+        could be the cause of this test's failure.
+
+        If this fails when you don't expect it to, replace the calls to
+        db.execute_query() with manual insertions into the database.
+        """
+
+        # 4 insertions total.
+        sql_insert = """
+        INSERT INTO Session VALUES (1743, 64);
+        INSERT INTO Session_Meta VALUES (1743, 64, 21.856, 11, 72);
+        INSERT INTO GroupData VALUES (1743, 64, 3, 1.2, 3, 4.56, 7, 8.9, 10.01);
+        INSERT INTO Chunk VALUES (123, 456, 789, 1011, "chunkfile.ext");
+        """
+
+        # db will use the DatabaseManager functions
+        db = database.DatabaseManager(self.test_address)
+        db.connect() # No changes counted for table creations/etc.
+        # DatabaseManager.execute_query() works with non-query statements!
+        db.execute_query('INSERT INTO Session VALUES (1743, 64);')
+        db.execute_query('INSERT INTO Session_Meta VALUES ('
+            '1743, 64, 21.856, 11, 72);')
+        db.execute_query('INSERT INTO GroupData VALUES ('
+            '1743, 64, 3, 1.23, 4, 5.67, 8, 9.0, 10.01);')
+        db.execute_query('INSERT INTO Chunk VALUES ('
+            '123, 456, 789, 1011, "chunkfile.ext");')
+        db_commits = db.commit()
+
+        # db_test will do everything itself
+        # Note that this requires most of DatabaseManager.setup() to be
+        # reproduced here, since we need to test at a lower level than that
+        db_test = database.DatabaseManager(self.test_address)
+        db_test.connect()
+        # Should do the same as the execute_query() calls above
+        db_test.cursor.executescript(sql_insert)
+        db_test_commits = db_test.commit()
+
+        self.assertEqual(db_commits, db_test_commits)
+        
+    def test_import_file_to_database(self):
+        db = database.DatabaseManager(self.test_address)
+	self.assertRaises(IOError, db.import_file_to_database, 'fakeFileName')
+
+        # Jamie's fixing this right now, so I'll do it later
+
     def test_create_condition_query(self):
-        """ Tests for string equivalence, not database functionality """
+        """tests for string equivalence, not database functionality """
 
         # create_condition_query's parameter is a dictionary
+        pass
+
+    def test_create_range_condition_query(self):
+        pass
+
+    def test_retrieve_db_info(self):
+        pass
+
+    def test_retrieve_distinct_by_name(self):
+        pass
+
+    def test_query_single(self):
+        pass
+
+    def test_query_multiple(self):
+        pass
+
+    def query_range(self):
+        pass
+
+    def test_query_aggregate(self):
+        pass
+
+    def test_import_csv_to_database(self):
+        pass
+
+    def test_import_excel_to_database(self):
+        pass
+
+    def test_import_file_to_database(self):
         pass
