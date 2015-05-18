@@ -67,5 +67,5 @@ target/
 # OS X-specific directories for storing OS X-specific (meta)data
 **/*.DS_Store
 
-# Databases
-**/data.sqlite3*
+# Databases (both .sql and .sqlite3{,-*})
+**/*.sql*

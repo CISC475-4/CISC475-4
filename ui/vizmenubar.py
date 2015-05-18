@@ -1,4 +1,3 @@
-#!/usr/bin/env python2
 # -*- coding: utf-8 -*-
 
 import sys
@@ -13,8 +12,20 @@ class VizMenuBar():
         self.init_menubar()
 
     def init_menubar(self):
+        # add a menu bar
         self.menubar = self.window.menuBar()
+
+        # make an actions menu
         action_menu = self.menubar.addMenu('&Actions')
-        action_menu.addAction(self.window.exit_action)
+        # add open file action
         action_menu.addAction(self.window.open_file_action)
-        action_menu.addAction(self.window.export_action)
+        # add add graph action
+        action_menu.addAction(self.window.add_graph_action)
+
+        # make a database menu
+        database_menu = self.menubar.addMenu('&Database')
+        # add clear database action
+        database_menu.addAction(self.window.clear_database_action)
+        
+
+        # action_menu.addAction(self.window.export_action)

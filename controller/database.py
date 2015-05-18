@@ -5,13 +5,6 @@ import os
 import sys
 import logging
 
-'''
-Jamie's notes
-can we use a connection.create_aggregate() for certain things?
-should replace the loading code with a 'cur.executemany' call that loops with her iter
-'''
-
-
 class DatabaseManager(object):
     '''
     Database Wrapper Class
@@ -31,14 +24,22 @@ class DatabaseManager(object):
 
     def connect(self):
         ''' inits the cursor and sql_conn objects
-        Should only be called once per program run
+        May be called multiple times per program run, but
+        only if disconnect() was called first
         '''
-        self.sql_conn = sqlite3.connect(self.address)
+        if self.sql_conn is not None:
+            logging.error('DatabaseManager: called connect() on a connected DB!')
+            return
+        self.sql_conn = sqlite3.connect(self.address, timeout=self.timeout)
         # Makes the output from cursor.fetch*() into 'Row' objects (like dicts)
         self.sql_conn.row_factory = sqlite3.Row
         # Use bytestrings instead of Unicode in the results
         self.sql_conn.text_factory = str
         self.cursor = self.sql_conn.cursor()
+        # if the schema has already been loaded, don't perform the init operation
+        logging.info('DatabaseManager: connected to DB')
+        if not self.check_db_setup():
+            self.setup()
 
     def disconnect(self):
         ''' removes the connection to the database
@@ -47,34 +48,44 @@ class DatabaseManager(object):
         self.sql_conn.commit()
         self.sql_conn.close()
         self.cursor = None
+        self.sql_conn = None
+        logging.info('DatabaseManager: closed DB connection')
 
     def check_db_setup(self):
         ''' check to make sure that all tables exist in the database already
         Return: bool. True if the database has already been setup
         '''
-        temp_conn = sqlite3.connect(self.address)
-        temp_conn.text_factory = str
-        temp_cur = temp_conn.cursor()
         existence = True
         tablenames = ['Chunk', 'Session', 'GroupData', 'Session_Meta']
         for table in tablenames:
-            temp_cur.execute("SELECT name FROM sqlite_master WHERE type='table' and name='{tbl}'".format(tbl=table))
-            potential = temp_cur.fetchone()
+            self.cursor.execute("SELECT name FROM sqlite_master WHERE type='table' and name='{tbl}'".format(tbl=table))
+            potential = self.cursor.fetchone()
             if potential is not None:
                 existence = (potential[0] == table)  # if the 'Chunk' table exists, it is set up
             else:
                 existence = False
-        temp_conn.close()
+        logging.info('DatabaseManager: check_db_setup returned {e}'.format(e=existence))
         return existence
 
     def setup(self, sql_filename='controller/schemata/main.sql'):
         ''' reads in the initial database schema and creates all necessary tables
         Params: filename to load up. Default is the saved schema we already wrote
+        Cursor must exist in order to do this operation
         '''
+        changes = 0
         with open(sql_filename, 'r') as schema:
             self.cursor.executescript(schema.read())  # catch 'em all
-        changes = self.commit()
+            changes = self.commit()
         logging.info('DatabaseManager: loaded schema {fn} successfully'.format(fn=sql_filename))
+        return changes
+
+    def clear(self):
+        tablenames = ['Chunk', 'Session', 'GroupData', 'Session_Meta']
+        for table in tablenames:
+            self.cursor.execute('DELETE FROM {n}'.format(n=table))
+        changes = self.commit()
+        logging.info('DatabaseManager: truncated all tables with {n} changes'.format(n=changes))
+        return changes
 
     def commit(self):
         ''' commits any pending changes and returns the total number of updated rows
@@ -85,11 +96,12 @@ class DatabaseManager(object):
         amt_changes = self.sql_conn.total_changes
         return amt_changes
 
-    def import_file_to_database(self, filename):
+    def import_file_to_database(self, filename, num_behaviors=3):
         '''
         Params: filename (string) the relative path of the file
         Return: none
         Will raise an exception or error if the data is already in the DB
+        To change the amount of behaviors in the file, change the param here.
         TODO: Exception handling for existing data
         '''
         if not os.path.isfile(filename):
@@ -104,7 +116,6 @@ class DatabaseManager(object):
         else:
             raise IOError("Incorrect file type! Expected .csv or .xls")
 
-        cur = self.connect()
         # iterate through dataset rows and insert
         # 1. Insert new row in Session
         allgroup = datasets[0]  # all group data goes here
@@ -120,8 +131,9 @@ class DatabaseManager(object):
         # 4. Iterate through rows and insert into Chunk
         timeseries = datasets[2]
         for record in timeseries.get_next_instance():
-            chunk_insert = "INSERT INTO Chunk values('{cid}','{sid}','{exp_time}','{b1}','{b2}','{b3}')".format(cid=timeseries.child_id, sid=timeseries.session_id, exp_time=record['TIME [SEC]'], b1=record['BEHAV 1 LEVEL'], b2=record['BEHAV 2 LEVEL'], b3=record['BEHAV 3 LEVEL'])
-            self.cursor.execute(chunk_insert)
+            for i in range(1, num_behaviors + 1):
+                chunk_insert = "INSERT INTO Chunk values('{cid}','{sid}','{exp_time}','{l}','{b}')".format(cid=timeseries.child_id, sid=timeseries.session_id, exp_time=record['TIME [SEC]'], l=i, b=record['BEHAV {i} LEVEL'.format(i=i)])
+                self.cursor.execute(chunk_insert)
         # if we've already loaded this file in, an IntegrityError will be raised
         changes = self.commit()
         if changes == 0:
@@ -161,7 +173,13 @@ class DatabaseManager(object):
         qry = " WHERE "
         for pair in conditions.iteritems():
             # TODO: distinguish between numeric and non-numeric keys
-            qry += pair[0] + " = " + str(pair[1]) + " AND " # pair = (key, value)
+            if type(pair[1]) == type(list()): #To Allow Multiple values 
+                qry += '(' 
+                for value in pair[1]:
+                    qry += pair[0]  + ' = ' + str(value) + " OR "  
+                qry = qry.rstrip(' OR ') + ') AND '
+            else:
+                qry += pair[0] + " = " + str(pair[1]) + " AND " # pair = (key, value)
         qry = qry.rstrip(' AND ')
         return qry 
         
@@ -195,12 +213,15 @@ class DatabaseManager(object):
             qry = "PRAGMA table_info(" + table + ")"
         return self.execute_query(qry)
 
-    def retrieve_distinct_by_name(self, column, table):
+    def retrieve_distinct_by_name(self, column, table, equality_condition={}):
         '''
         call the database to query for all unique values of a given column from the specified table
         ie: use to retrive all session_ids or child_ids from Session table
         '''
         qry = "SELECT DISTINCT " + column + " FROM " + table
+        if equality_condition != {}:
+            qry += self.create_condition_query(equality_condition)
+
         return self.execute_query(qry)
         
     def query_single(self, column, table, conditions={}):
@@ -249,6 +270,7 @@ class DatabaseManager(object):
         else:
             qry += 'WHERE '
         qry += self.create_range_condition_query(range_conditions) 
+        qry = qry.rstrip('AND ')
         return self.execute_query(qry)
 
     def query_aggregate(self, column, table, fn, range_conditions={}, equality_conditions={}):
@@ -283,5 +305,4 @@ class DatabaseManager(object):
             cond_qry += self.create_range_condition_query(range_conditions)
 
         qry = "SELECT " + aggr_command + "(" + column + ") " + "FROM " + table + cond_qry
-        print qry
         return self.execute_query(qry)

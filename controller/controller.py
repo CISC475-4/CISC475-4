@@ -2,6 +2,7 @@
 import utility.file_utility
 import database
 import logging
+from os import listdir
 
 
 class Controller:
@@ -15,16 +16,29 @@ class Controller:
         Initializes the controller.  Creates an instance of the database.
         """
         self.db = database.DatabaseManager()
-        self.db.connect()  # this creates the cursor object
 
-    def setup_db(self):
+    def __enter__(self):
+        '''
+        This method enables us to use Controller in a 'with' clause
+        In doing so, we avoid timing errors when calling connect()
+        And also get to tear down the DB when the program is done executing
+        '''
+        self.db.connect()
+        return self
+
+    def __exit__(self, type, value, traceback):
+        '''
+        Tear down the DB before program exit. Prevents data inconsistencies
+        '''
+        self.db.disconnect()
+
+    def reset_db(self):
         """
-        TODO: write function header
+        Delete our current DB file and recreate our DB
         """
-        # TODO: Answer why this can't be called in the DatabaseManager initialization
-        # if the schema has already been loaded, don't perform the init operation
-        if not self.db.check_db_setup():
-            self.db.setup()
+        self.db.clear()
+        self.db.disconnect()
+        self.db.connect()
 
     def import_file_to_database(self, filename):
         """
@@ -39,13 +53,19 @@ class Controller:
         #     logging.error(e)
         except Exception as e:
             # TODO: Get a modal to pop up in the UI displaying the error message
-            logging.error(e)
+            logging.error(e.message)
 
-    def import_folder_to_database(self, dirpath):
-        '''
-        Given a path to a directly, imports all CSV and XLS[X] files with correct pathnames format to db
-        '''
-        #TODO: this function
+
+    # TODO implement method
+    def import_folder_to_database(self, path):
+        """
+        Given a path, imports all files in that path to the database where only the
+        files that are in the required format will be loaded (other files are skipped).
+        This is useful so we can load in multiple sessions all at once!
+
+        input:
+            path (string) path of the folder
+        """
         pass
 
     ## GENERAL DATABASE RELEVANT DATA
@@ -59,14 +79,19 @@ class Controller:
         '''
         returns a list of all columns from a given table
         '''
-        return [info[1] for info in self.db.retrieve_db_info(tablename)] #info[1] index of column name
-    
+        return [info[1] for info in self.db.retrieve_db_info(tablename)] #info[1] is index of column name
+
     def get_all_child_ids(self):
         '''
         Calls teh database to retrieve all unique child_ids 
         returns a list of child_ids
         '''
-        return self.db.retrieve_distinct_by_name("child_id", "Session")
+        # query to get all the child ids
+        db_child_ids = self.db.retrieve_distinct_by_name("child_id", "Session")
+        # list comprehension to get child ids in list of ints format
+        #  (they are originally in a list of tuples (child_id, ) )
+        child_ids = [child_id[0] for child_id in db_child_ids]
+        return child_ids
 
     def get_all_sessions_for_child(self, child_id):
         '''
@@ -74,7 +99,11 @@ class Controller:
         returns a list of session_ids
         '''
         condition = {"child_id" : child_id }
-        return self.db.query_single("session_id", "Session", condition)
+        # query to get all session ids for a specified child id
+        db_session_ids = self.db.query_single("session_id", "Session", condition)
+        # list comprehesion to get session ids in a list of ints format
+        session_ids = [session_id[0] for session_id in db_session_ids]
+        return session_ids
 
     ## DATA SPECIFIC TO GROUPDATA TABLE
     def get_all_combo_indexes(self, child_id, session_id):
@@ -128,7 +157,7 @@ class Controller:
         session_id - the session from which to retrieve the data
         returns the max chunk duration (chunk_max_dur) from a unique combo_index, child_id, session_id triple
         '''
-        column = 'chunk_avg_dur' 
+        column = 'chunk_max_dur' 
         table = 'GroupData'
         conditions = {
             'child_id' : child_id,
@@ -153,14 +182,61 @@ class Controller:
         }
         return self.db.query_single(column, table, conditions)
 
-    def get_freq_occurence(self, combo_index, child_id, session_id):
+    def get_combo_scores(self, behavior, child_id, session_id):
         '''
-        TODO: Requires a join with the chunk table (top 3 behaviors)
-        Retrieves the top behaviors for each combo/code
+        behavior - a single behavior code (1,2...)
+        returns all the combo score with their time intervals for a given behavior, child_id, and session_id
         '''
-         
+        #TODO: this function
+        pass
+
+    def get_freq_score_occurence(self, behavior, combo_score, child_id, session_id):
+        '''
+        Retrieves the frequency for some combo score
+        '''
+        #TODO: this function
+        pass
+
+    def get_avg_time_after_occurace(self, behavior, combo_score, child_id, session_id):
+        '''
+        returns the average time after which a certain combo_score occurs
+        '''
+        #TODO: this function
+        pass
+
 
     ## DATA SPECIFIC TO CHUNK TABLE
+    def get_behavior_types(self, child_id=None, session_id=None):
+        '''
+        returns the unique behavior_ids for all children
+        given a child_id, will return all unique behavior_ids for that child
+        given a session_id, will return all unique behavior_ids for that session
+        '''
+        equality_conditions = {}
+        if child_id != None:
+            equality_conditions['child_id'] = child_id
+        if session_id != None:
+            equality_conditions['session_id'] = session_id
+
+        db_types = self.db.retrieve_distinct_by_name('behavior_id', 'Chunk', equality_conditions)
+        types = [str(typ[0]) for typ in db_types]
+        return types
+
+    #TODO: Mapping is hard-coded for submission & presentation. Code map should be handled properly.
+    def get_behavior_names(self, child_id=None):
+        '''
+        the same as get_behavior_types, but returns the mapping from numeric code to english
+        '''
+        mapping = {
+            1: 'Attention',
+            2: 'Affect',
+            3: 'Verbal'
+        }
+        codes = self.get_behavior_types(child_id)
+
+        type_names = [mapping[t] for t in codes]
+        return type_names
+
     def get_behaviors_for_child(self, behaviors, child_id, session_id=None, time_start=None, time_end=None, timestamps=None):
         '''
         behaviors - a list of behaviors (column names)
@@ -183,21 +259,28 @@ class Controller:
         equality_conditions = {'child_id': child_id}
         if session_id is not None:
             equality_conditions['session_id'] = session_id
+        columns = []
+        # retrieve behavior columns
+        bh_amt = len(behaviors)
+        if bh_amt > 0:
+            columns.append('behavior_id')
+            columns.append('behavior_lvl')
+            equality_conditions['behavior_id'] = [bh.lstrip('b') for bh in behaviors]
+
         # retrieve time column if requested
         if timestamps:
-            behaviors.append('time')
-            return self.db.query_range(behaviors, 'Chunk', range_conditions, equality_conditions)
+            columns.append('time')
+            return self.db.query_range(columns, 'Chunk', range_conditions, equality_conditions)
         else:
-            return self.db.query_multiple(behaviors, 'Chunk', equality_conditions)
+            return self.db.query_multiple(columns, 'Chunk', equality_conditions)
 
-    def get_max_behavior(self, behaviors, child_id, session_id=None, time_start=None, time_end=None):
+    def get_max_behavior(self, behavior, child_id, session_id=None, time_start=None, time_end=None):
         '''
-        behaviors - a list of behaviors to get the max value of given the child_
+        behaviors - a single behavior to be gotten the max of
         optional parameters may be used for more specific queries
         returns a list of max values cooresponding to the list of behaviors
         '''
         aggr_code = 0 #cooresponding to the code for max iaggregate command
-        max_behaviors = []
         equality_conditions = {"child_id": child_id}
 
         #build time constraints
@@ -214,27 +297,21 @@ class Controller:
         if session_id != None:
             equality_conditions['session_id'] = session_id
 
-        #requesting the query from database object
-        if type(behaviors) == type(list()):
-            for behavior in behaviors: 
-                max_val = self.db.query_aggregate(behavior, "Chunk", aggr_code, range_conditions, equality_conditions) 
-                max_behaviors += max_val
-        else:
-            #not handling behaviors that are not a list
-           logging.error("Controller: Incorrect argument to query database")
+        code = int(behavior.lstrip('b'))
+        equality_conditions['behavior_id'] = code
+        max_val = self.db.query_aggregate('behavior_lvl', "Chunk", aggr_code, range_conditions, equality_conditions) 
 
-        return max_behaviors
+        return max_val[0][0] # surrounded in a 1-tuple with a 1-list
         
 
-    def get_min_behavior(self, behaviors, child_id, session_id=None, time_start=None, time_end=None):
+    def get_min_behavior(self, behavior, child_id, session_id=None, time_start=None, time_end=None):
         '''
-        behaviors - a list of behaviors to get the max value of given the child_
+        behaviors - a single behavior to be gotten the max of
         optional parameters may be used for more specific queries
         returns a list of max values cooresponding to the list of behaviors
         '''
-        aggr_code = 1 #cooresponding to the code for max aggregate command
-        min_behaviors = []
-        condition = {"child_id", child_id}
+        aggr_code = 1 #cooresponding to the code for min aggregate command
+        equality_conditions = {"child_id": child_id}
 
         #build time constraints
         time_conditions = {}
@@ -248,28 +325,23 @@ class Controller:
         
         #non-default session_id
         if session_id != None:
-           condition['session_id'] = session_id         
+           equality_conditions['session_id'] = session_id
 
-        if type(behaviors) == type(list()):
-            for behavior in behaviors: 
-                min_val = self.db.query_aggregate(behavior, "Chunk", aggr_code, range_conditions, equality_conditions) 
-                min_behaviors += min_val
-        else:
-            #not handling behaviors that are not a list
-           logging.error("Controller: Incorrect argument to query database")
+        code = int(behavior.lstrip('b'))
+        equality_conditions['behavior_id'] = code
+        min_val = self.db.query_aggregate('behavior_lvl', "Chunk", aggr_code, range_conditions, equality_conditions) 
 
-        return min_behaviors
+        return min_val[0][0]
 
-    def get_avg_behavior(self, behaviors, child_id, session_id=None, time_start=None, time_end=None):
+    def get_avg_behavior(self, behavior, child_id, session_id=None, time_start=None, time_end=None):
         '''
-        behaviors - a list of behaviors to get the max value of given the child_
+        behaviors - a single behavior to be gotten the max of
         timestamps - (optional) set to True if you want to retrieve timestamps with each data instance
         optional parameters may be used for more specific queries
         returns a list of avg values cooresponding to the list of behaviors
         '''
         aggr_code = 3 #cooresponding to the code for max aggregate command
-        avg_behaviors = []
-        equality_conditions = {"child_id", child_id}
+        equality_conditions = {"child_id": child_id}
 
         #build time constraints
         time_conditions = {}
@@ -283,14 +355,13 @@ class Controller:
         
         #non-default session_id
         if session_id != None:
-           equality_conditions['session_id'] = session_id         
+           equality_conditions['session_id'] = session_id
 
-        if type(behaviors) == type(list()):
-            for behavior in behaviors: 
-                avg_val = self.db.query_aggregate(behavior, "Chunk", aggr_code, range_conditions, equality_conditions)
-                avg_behaviors += avg_val
-        
-        
+        code = int(behavior.lstrip('b'))
+        equality_conditions['behavior_id'] = code
+        avg_val= self.db.query_aggregate('behavior_lvl', 'Chunk', aggr_code, range_conditions, equality_conditions)
+        return avg_val[0][0]
+
 
     # TABLE SPECIFIC QUERIES
     def get_group_data(self, columns):

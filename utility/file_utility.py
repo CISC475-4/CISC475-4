@@ -106,7 +106,7 @@ def get_data_from_xls(path):
             file_name = ospath.basename(path)
 
             ids = parse_filename(file_name)
-            print(ids, file_name)
+            #print(ids, file_name)
 
             num_worksheets = wb.nsheets
 
