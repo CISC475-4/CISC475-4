@@ -35,22 +35,22 @@ class TestDatabase(unittest.TestCase):
     """
 
     # This is here so these dbs don't connect to the same or default db
-    test_address = ''
-
-#    def setUp(self):
-#        """initializes data necessary to test database functionality"""
-#	pass
+    test_address = 'test.sqlite3'
+    test_timeout = 5
 
     def test___init__(self):
         """asserts expected behavior of DatabaseManager initializations"""
-        db = database.DatabaseManager(self.test_address)
+        db = database.DatabaseManager(address=self.test_address, timeout=self.test_timeout)
 
         self.assertEqual(self.test_address, db.address)
+        self.assertEqual(self.test_timeout, db.timeout)
         self.assertIsNone(db.sql_conn)
         self.assertIsNone(db.cursor)
+        db.disconnect()
 
     def test_connect(self):
-        """ """
+        """ test the process of opening a connection to the database
+        """
         # First case: see if having a set sql_conn variable returns None
         db_connected = database.DatabaseManager(self.test_address)
         db_connected.sql_conn = 'connection.sql' # It wouldn't be a str normally
@@ -63,10 +63,12 @@ class TestDatabase(unittest.TestCase):
             self.assertNotEqual(db_connected.sql_conn.row_factory, sqlite3.Row)
             self.assertNotEqual(db_connected.sql_conn.text_factory, str)
 
+        db_connected.disconnect()
+
         # Second case: make sure all variables are updated properly
-	db = database.DatabaseManager(self.test_address)
-	sql_conn_orig = db.sql_conn
-	cursor_orig = db.cursor
+        db = database.DatabaseManager(self.test_address)
+        sql_conn_orig = db.sql_conn
+        cursor_orig = db.cursor
         # Without a valid sql_conn, db has no cursor, so this should fail
         # I think this should be caught in DatabaseManager. Just do an
         # `if self.cursor: ` before the execute line to make sure the cursor
@@ -75,17 +77,17 @@ class TestDatabase(unittest.TestCase):
         # This should evaluate to False anyway. Setting it for now since I think
         # the above method should just return False or raise its own Exception
         was_setup_orig = False
-	db.connect()
+        db.connect()
 
-	self.assertNotEqual(sql_conn_orig, db.sql_conn)
-	self.assertNotEqual(cursor_orig, db.cursor)
+        self.assertNotEqual(sql_conn_orig, db.sql_conn)
+        self.assertNotEqual(cursor_orig, db.cursor)
         self.assertNotEqual(was_setup_orig, db.check_db_setup())
-	self.assertEqual(db.sql_conn.text_factory, str)
-	self.assertEqual(db.sql_conn.row_factory, sqlite3.Row)
+        self.assertEqual(db.sql_conn.text_factory, str)
+        self.assertEqual(db.sql_conn.row_factory, sqlite3.Row)
 
     def test_disconnect(self):
         db = database.DatabaseManager(self.test_address)
-	db.connect()
+        db.connect()
         db.disconnect()
 
         self.assertIsNone(db.cursor)
@@ -93,8 +95,8 @@ class TestDatabase(unittest.TestCase):
     
     def test_setup(self):
         db_setup = database.DatabaseManager(self.test_address)
-	db_setup.connect()
-	changes = db_setup.setup()
+        db_setup.connect()
+        changes = db_setup.setup()
 	
         # Table creations don't count as changes, so that can't be checked.
         # Instead, just make sure check_db_setup works as planned.
@@ -103,7 +105,7 @@ class TestDatabase(unittest.TestCase):
         # Database that tries to import a file that doesn't exist
         # There's actually no way to call setup() with a parameter in the
         # code at the moment, so maybe this isn't a problem.
-	db_bad_fname = database.DatabaseManager(self.test_address)
+        db_bad_fname = database.DatabaseManager(self.test_address)
         # Need to reproduct DatabaseManager.connect() here since it now calls
         # setup() itself                                              #
         db_bad_fname.sql_conn = sqlite3.connect(db_bad_fname.address, #
@@ -114,7 +116,7 @@ class TestDatabase(unittest.TestCase):
 
         # Without setup() having been called, there will be nothing in the
         # database. Thus, both of the following assert statements should work
-	self.assertRaises(IOError, db_bad_fname.setup, 'fileThatDoesntExist')
+        self.assertRaises(IOError, db_bad_fname.setup, 'fileThatDoesntExist')
         # This will fail because connect() calls setup() now.
         self.assertFalse(db_bad_fname.check_db_setup())
 
@@ -125,9 +127,9 @@ class TestDatabase(unittest.TestCase):
         """
         # db_setup will check if a set-up db is accepted
         db_setup = database.DatabaseManager(self.test_address)
-	db_setup.connect() # This will call db_setup.setup()
+        db_setup.connect() # This will call db_setup.setup()
         
-	self.assertTrue(db_setup.check_db_setup())
+        self.assertTrue(db_setup.check_db_setup())
         
         db_setup.disconnect()
 
@@ -179,7 +181,7 @@ class TestDatabase(unittest.TestCase):
         Note: I think clear's implementation could be better. Should tablenames
         be hardcoded into the function?
         """
-	db = database.DatabaseManager(self.test_address)
+        db = database.DatabaseManager(self.test_address)
         db.connect() 
 
         # Data will be entered into the database in this call.
@@ -233,7 +235,7 @@ class TestDatabase(unittest.TestCase):
         
     def test_import_file_to_database(self):
         db = database.DatabaseManager(self.test_address)
-	self.assertRaises(IOError, db.import_file_to_database, 'fakeFileName')
+        self.assertRaises(IOError, db.import_file_to_database, 'fakeFileName')
 
         # Jamie's fixing this right now, so I'll do it later
 
@@ -249,7 +251,7 @@ class TestDatabase(unittest.TestCase):
         errors that could occur that this test function doesn't cover.
         """
 
-	db = database.DatabaseManager(self.test_address)
+        db = database.DatabaseManager(self.test_address)
 
         # There's no way to add any part of the query before the WHERE [...]
         expected = ' WHERE child_id = 12345 AND time_modified = 88888 AND ('
@@ -266,7 +268,7 @@ class TestDatabase(unittest.TestCase):
 
     def test_create_range_condition_query(self):
         """tests for string equality, not database functionality"""
-	db = database.DatabaseManager(self.test_address)
+        db = database.DatabaseManager(self.test_address)
         expected = ''
 
         self.fail('Not implemented. I don\'t understand this function!')
@@ -275,7 +277,7 @@ class TestDatabase(unittest.TestCase):
         # Based on what was output when I called this manually
         expected = [('Session',), ('Chunk',), ('GroupData',), ('Session_Meta',)]
         
-	db = database.DatabaseManager(self.test_address)
+        db = database.DatabaseManager(self.test_address)
         db.connect() # An exception is raised if this isn't called!
         
         # First test the function without parameters 
