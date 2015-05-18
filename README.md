@@ -27,6 +27,10 @@ or
 ```
 $ /usr/bin/env python2 -m unittest test.test_database
 ```
+or
+```
+$ /usr/bin/env python2 main.py -t
+```
 
 Generate code coverage reports    
 ```
