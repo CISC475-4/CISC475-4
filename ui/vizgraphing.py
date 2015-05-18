@@ -21,6 +21,9 @@ class VizGraphing():
         self.init_graphs() 
 
     def init_graphs(self):
+        """
+        set-up the qt elements on the main graph window
+        """
         self.layout = QtGui.QVBoxLayout(self.window.main_widget)
         self.layout.setContentsMargins(0,0,0,0)
 
@@ -49,6 +52,13 @@ class VizGraphing():
         self.window.setCentralWidget(self.window.main_widget)
 
     def add_graph_with_ids(self, child_id, session_id, behavior_id, color):
+        """
+        adds a graph to the window
+        child_id:    (string) id for a child
+        session_id:  (string) id for a session that the child attended
+        behavior_id: (string) id for a behavior in the selected session
+        color:       (string) the name of a matplotlib color map - see http://matplotlib.org/examples/color/colormaps_reference.html
+        """
         behavior_data = self.window.controller.get_behaviors_for_child([behavior_id], child_id, session_id)
         b = []
         for i in behavior_data:
@@ -56,9 +66,12 @@ class VizGraphing():
         self.add_graph(b, child_id, session_id, behavior_id, color)
 
     def add_multisystem_graph(self, child_id, session_id, color):
-        ''' 
+        """
         sum all behaviors into one and display it as a graph
-        '''
+        child_id:    (string) id for a child
+        session_id:  (string) id for a session that the child attended
+        color:       (string) the name of a matplotlib color map - see http://matplotlib.org/examples/color/colormaps_reference.html
+        """
 
         behaviors = self.window.controller.get_behavior_types(child_id, session_id)
         num_behaviors = len(behaviors)
@@ -72,6 +85,14 @@ class VizGraphing():
         self.add_graph(b, child_id, session_id, 'multi system', color)
 
     def add_graph(self, behavior_data, child_id_label="N/A", session_id_label="N/A", behavior_label="N/A", color="cool"):
+        """
+        add a graph to the window using a array of behavor data
+        behavior_data:    (array of integers) data that represents the behavior(s) of a child in a session
+        child_id_label:   (string) used to label the graph
+        session_id_label: (string) used to label the graph
+        behavior_label:   (string) used to label the graph
+        color:            (string) the name of a matplotlib color map - see http://matplotlib.org/examples/color/colormaps_reference.html
+        """
         
         # Outer layout for graph
         bar_layout = QtGui.QHBoxLayout()
@@ -129,6 +150,12 @@ class VizGraphing():
         key_btn.clicked.connect(lambda: self.show_key(min(behavior_data), max(behavior_data), color))
 
     def show_key(self, min_val, max_val, color):
+        """
+        Show a dialog box with a pyplot displaying a color key (legend)
+        min_val: (int) the smallest integer in the graph's behavior_data
+        max_val: (int) the largest integer in the graph's behavior_data
+        color:   (string) the name of a matplotlib color map - see http://matplotlib.org/examples/color/colormaps_reference.html
+        """
         fig = pyplot.figure(figsize=(5,1))
         fig.canvas.set_window_title('Key')
         fig.canvas.toolbar.hide()
@@ -142,6 +169,13 @@ class VizGraphing():
         pyplot.show()
 
     def delete_graph(self, close_btn, key_btn, graph, labels):
+        """
+        Remove a graph and its related buttons and labels
+        close_btn: (qt_widget) the close button
+        key_btn:   (qt_widget) the show color key button
+        graph:     (qt_widget) the graph
+        labels:    (qt_widget array) an array of label widgets associated with the graph
+        """
         close_btn.hide()
         close_btn.deleteLater()
         key_btn.hide()
@@ -181,19 +215,33 @@ class MyMplCanvas(FigureCanvas):
 class ColorBarCanvas(MyMplCanvas):
 
     def __init__(self, dataset, color, *args, **kwargs):
+        """
+        dataset:    (array of integers) data that represents the behavior(s) of a child in a session
+        color:            (string) the name of a matplotlib color map - see http://matplotlib.org/examples/color/colormaps_reference.html
+        """
         self.dataset = dataset
         self.graph_color = color
         MyMplCanvas.__init__(self, *args, **kwargs)
 
     def set_seek_slider(self, seek_slider):
+        """
+        give the graph a link to the seek slider
+        """
         self.seek_slider = seek_slider
         self.seek_slider.valueChanged.connect(self.redraw)
 
     def set_zoom_slider(self, zoom_slider):
+        """
+        give the graph a link to the zoom slider
+        """
         self.zoom_slider = zoom_slider
         self.zoom_slider.valueChanged.connect(self.redraw)
 
     def compute_initial_figure(self):
+        """
+        set-up the inital color list that links the behavior data to a color on the color bar
+        add the color bar to the MplCanvas
+        """
         data_min = min(self.dataset)
         data_max = max(self.dataset)
         self.data_range = data_max - data_min + 1 
@@ -222,6 +270,10 @@ class ColorBarCanvas(MyMplCanvas):
                                    orientation='horizontal')
 
     def redraw(self):
+        """
+        called when a slider's value is updated
+        recalculates what portion of each graph to show
+        """
         zoom = self.zoom_slider.value()
         seek = self.seek_slider.value()
         total_len = len(self.color_list)
