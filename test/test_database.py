@@ -5,6 +5,9 @@ To run:
 [CISC475-4] $ /usr/bin/env python2 -m unittest test.test_database[.class.function]
 or:
 [CISC475-4] $ nosetests --exe
+to generate code coverage in addition to running the tests:
+[CISC475-4] $ nosetests --exe --with-coverage --cover-tests --cover-html \
+              --cover-html-dir=<http srv directory>
 
 Notice that the directory is the project directory, not test/ or controller/
 
