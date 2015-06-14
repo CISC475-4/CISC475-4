@@ -1,7 +1,9 @@
 #Using Vagrant
 
-1. Have [vagrant](https://www.vagrantup.com/downloads.html 'Download link') 
-   installed on your machine. 
+1. Install Virtual Box (https://www.virtualbox.org/wiki/Downloads)
+
+2. Insatall [vagrant](https://www.vagrantup.com/downloads.html 'Download link') 
+   on your machine
 
     **Note**: If you're running Ubuntu or another Debian-based distribution of
     Linux, you likely won't have a recent enough version of Vagrant available
@@ -12,12 +14,13 @@
     in the Debian/Ubuntu repositories is 1.4.3.) To install the file you
     downloaded, double-click it or run `# dpkg -i <file>`.
 
-2. Go to the repository directory (where this file and the `Vagrantfile` 
-   are located). Your Vagrant box won't be able to boot if you're not in this
-   directory.   
+3.  Open the Terminal on Mac, or command line if on Windows.  Go to the directory
+    where this file and the 'Vagrantfile' are located.  Your Vagrant box won't be 
+    able to boot if you're not in this directory.   
 
-3. Make sure you have VirtualBox installed, then run `vagrant up`. Wait for 
-   command line to be available again.  A GUI should have popped up.  
+3.  Run `vagrant up`. 
+    Wait for command line to be available again (this will take a while ~10 minutes).  
+    A GUI should have popped up.  
 
     **Note**: If VirtualBox shuts down the VM shortly after creating the
     GUI window, try starting the VM directly from the VirtualBox GUI and
@@ -36,13 +39,11 @@
 5. In the GUI shell, run `sudo startxfce4 &`  
 
 6. An actual GUI should appear, from here you can access the repository in 
-   `/vagrant` because it's a shared folder of the project  
+   `/vagrant` because it's a shared folder of the project
 
 To save state of the VM, use `vagrant suspend`  
 To destroy the VM, use `vagrant destroy`  
-To start, or restart the VM from suspend, use `vagrant up`  
-(I'm not sure of this) To update the VM when new stuff is added, use 
-`vagrant reload --provision`   
+To start, or restart the VM from suspend, use `vagrant up`    
 
 If you're using Linux, you'll have to make sure your VirtualBox kernel 
 module is enabled:

@@ -6,6 +6,7 @@ whole project is written in Python.
 
 For more information, consult the documentation and comments in the source code.
 
-To run the application, double-click on the "run" file in this directory, or
-use the following command in Terminal.app while in the project directory:
+In order to use this application without installing all of the Python libraries on your machine, you will need to set up Vagrant, as instructed in ‘Using_Vagrant.md’
+
+To run the application, double-click on the "run" file in this directory (or in the ‘/vagrant’ directory if using Vagrant), or use the following command in Terminal.app while in the project directory:
     $ /usr/bin/env python2 main.py
