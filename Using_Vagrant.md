@@ -2,7 +2,7 @@
 
 1. Install Virtual Box (https://www.virtualbox.org/wiki/Downloads)
 
-2. Insatall [vagrant](https://www.vagrantup.com/downloads.html 'Download link') 
+2. Install [vagrant](https://www.vagrantup.com/downloads.html 'Download link') 
    on your machine
 
     **Note**: If you're running Ubuntu or another Debian-based distribution of
